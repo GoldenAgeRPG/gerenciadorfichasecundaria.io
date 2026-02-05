@@ -176,6 +176,10 @@
         <div id="occ-container" class="sortable-list"></div>
         <button class="btn-add" onclick="addLog('occ-container')">+ Ocorrência</button>
 
+        <h3>Aulas</h3>
+        <div id="aulas-container" class="sortable-list"></div>
+        <button class="btn-add" onclick="addLog('aulas-container')">+ Aula</button>
+
         <h3>Treinos de Atributo</h3>
         <div id="attr-container" class="sortable-list"></div>
         <button class="btn-add" onclick="addLog('attr-container')">+ Treino Atributo</button>
@@ -418,7 +422,7 @@ function generateHTMLString() {
   });
 
   const css = `<style>.j-b{--p:#6D20C5;--b:#121212;--g:#1e1e1e;--t:#ccc;font:12px Segoe UI,sans-serif;background:var(--b);color:var(--t);border:1px solid #333;max-width:800px;margin:auto}.j-b input{display:none}.j-n{display:flex;background:#000;border-bottom:2px solid var(--p)}.j-n label{flex:1;text-align:center;padding:10px;cursor:pointer;background:#0a0a0a;font-weight:700;text-transform:uppercase;transition:.3s}#t1:checked~.j-n label[for="t1"],#t2:checked~.j-n label[for="t2"]{background:var(--p);color:#fff}.j-c{display:none;padding:15px;animation:f .5s}#t1:checked~.c1,#t2:checked~.c2{display:block}@keyframes f{from{opacity:0}to{opacity:1}}.i-c{background:var(--g);border:1px solid #333;margin-bottom:10px;padding:10px;display:grid;grid-template-columns:80px 1fr;gap:10px}.i-m{width:100%;height:80px;object-fit:cover;border:1px solid #444}.i-h{border-bottom:1px solid var(--p);padding-bottom:2px;margin-bottom:2px;display:flex;justify-content:space-between}.i-n{color:#fff;font-weight:700;text-transform:uppercase}.i-tp{font-size:9px;color:var(--p);font-weight:700;background:#000;padding:1px 4px;border-radius:2px}.i-st{font:10px monospace;color:#999}.i-st b{color:#fff}.i-d,.i-ef{line-height:1.3;font-size:11px}.i-ef{color:#dcbdfc;margin-top:2px}.i-ef b{color:var(--p)}.l-bk{margin-bottom:20px}.l-tt{background:linear-gradient(90deg,var(--p),transparent);color:#fff;padding:4px 10px;font-weight:700;text-transform:uppercase;font-size:11px;margin-bottom:5px;letter-spacing:1px}.l-rw{display:flex;justify-content:space-between;background:var(--g);padding:6px 10px;margin-bottom:2px;align-items:center;font-size:11px}.l-rw:hover{background:#333;border-left:2px solid var(--p)}.l-dt{color:var(--p);font-weight:700;margin-right:10px;font-family:monospace}.l-tx{flex:1;color:#ddd}.l-lk{background:#000;color:#fff;text-decoration:none;padding:2px 6px;border-radius:2px}.ap-bx{margin-bottom:10px;border:1px solid #333}.ap-hd{background:#252525;padding:5px 10px;font-weight:700;color:#fff;display:flex;justify-content:space-between;align-items:center;font-size:11px}.c-n{background:var(--p);padding:1px 5px;border-radius:3px;font-size:9px}.ap-bd{padding:5px}</style>`;
-  return css + `<div class="j-b"><input type="radio" name="g" id="t1" checked><input type="radio" name="g" id="t2"><div class="j-n"><label for="t1">Inventário</label><label for="t2">Registros</label></div><div class="j-c c1">${itemsHTML}</div><div class="j-c c2">${getBlock('missoes-container', 'Missões')}${getBlock('quests-container', 'Quests')}${getBlock('raids-container', 'Raids')}${getBlock('eventos-container', 'Eventos')}${getBlock('rp-container', 'RPs Livres')}${getBlock('occ-container', 'Ocorrências')}<div class="l-bk"><div class="l-tt">Treinos de Aptidão</div>${aptHTML}</div>${getBlock('attr-container', 'Treinos de Atributo')}</div></div>`;
+  return css + `<div class="j-b"><input type="radio" name="g" id="t1" checked><input type="radio" name="g" id="t2"><div class="j-n"><label for="t1">Inventário</label><label for="t2">Registros</label></div><div class="j-c c1">${itemsHTML}</div><div class="j-c c2">${getBlock('missoes-container', 'Missões')}${getBlock('quests-container', 'Quests')}${getBlock('raids-container', 'Raids')}${getBlock('eventos-container', 'Eventos')}${getBlock('rp-container', 'RPs Livres')}${getBlock('occ-container', 'Ocorrências')}${getBlock('aulas-container', 'Aulas')}<div class="l-bk"><div class="l-tt">Treinos de Aptidão</div>${aptHTML}</div>${getBlock('attr-container', 'Treinos de Atributo')}</div></div>`;
 }
 
 function updatePreview() { 
@@ -458,7 +462,7 @@ function fallbackCopy(text) {
 
 // --- PERSISTÊNCIA ---
 function saveData() {
-    const data = { items: [], missoes: [], quests: [], raids: [], eventos: [], rp: [], occ: [], attr: [], aptitudes: [] };
+    const data = { items: [], missoes: [], quests: [], raids: [], eventos: [], rp: [], occ: [], aulas: [], attr: [], aptitudes: [] };
     
     document.querySelectorAll('.item-entry').forEach(el => {
         data.items.push({
@@ -475,7 +479,7 @@ function saveData() {
         return arr;
     };
     data.missoes = grabLogs('missoes-container'); data.quests = grabLogs('quests-container'); data.raids = grabLogs('raids-container');
-    data.eventos = grabLogs('eventos-container'); data.rp = grabLogs('rp-container'); data.occ = grabLogs('occ-container'); data.attr = grabLogs('attr-container');
+    data.eventos = grabLogs('eventos-container'); data.rp = grabLogs('rp-container'); data.occ = grabLogs('occ-container'); data.aulas = grabLogs('aulas-container'); data.attr = grabLogs('attr-container');
 
     document.querySelectorAll('.apt-block').forEach(blk => {
         const logs = [];
@@ -495,7 +499,7 @@ function loadData() {
 
 function repopulateForm(data) {
     document.getElementById('items-container').innerHTML = '';
-    ['missoes-container','quests-container','raids-container','eventos-container','rp-container','occ-container','attr-container'].forEach(id => document.getElementById(id).innerHTML = '');
+    ['missoes-container','quests-container','raids-container','eventos-container','rp-container','occ-container','aulas-container','attr-container'].forEach(id => document.getElementById(id).innerHTML = '');
     document.getElementById('aptitudes-container').innerHTML = '';
 
     if(data.items) data.items.forEach(i => addItem(i));
@@ -505,6 +509,7 @@ function repopulateForm(data) {
     if(data.eventos) data.eventos.forEach(l => addLog('eventos-container', l));
     if(data.rp) data.rp.forEach(l => addLog('rp-container', l));
     if(data.occ) data.occ.forEach(l => addLog('occ-container', l));
+    if(data.aulas) data.aulas.forEach(l => addLog('aulas-container', l));
     if(data.attr) data.attr.forEach(l => addLog('attr-container', l));
     if(data.aptitudes) data.aptitudes.forEach(a => addAptitudeBlock(a));
     updatePreview();
@@ -523,7 +528,7 @@ function processImport() {
     try {
         const parser = new DOMParser();
         const doc = parser.parseFromString(code, 'text/html');
-        const importedData = { items: [], missoes: [], quests: [], raids: [], eventos: [], rp: [], occ: [], attr: [], aptitudes: [] };
+        const importedData = { items: [], missoes: [], quests: [], raids: [], eventos: [], rp: [], occ: [], aulas: [], attr: [], aptitudes: [] };
 
         doc.querySelectorAll('.i-c').forEach(el => {
             const stats = el.querySelector('.i-st').innerHTML;
@@ -551,6 +556,7 @@ function processImport() {
             else if(title.includes('EVENTOS')) importedData.eventos = logs;
             else if(title.includes('RPS LIVRES')) importedData.rp = logs;
             else if(title.includes('OCORRÊNCIAS')) importedData.occ = logs;
+            else if(title.includes('AULAS')) importedData.aulas = logs;
             else if(title.includes('TREINOS DE ATRIBUTO')) importedData.attr = logs;
             else if(title.includes('TREINOS DE APTIDÃO')) {
                 bk.querySelectorAll('.ap-bx').forEach(ab => {
