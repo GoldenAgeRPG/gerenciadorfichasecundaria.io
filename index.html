@@ -1,637 +1,101 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JKGA - Ficha Secundária</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Golden Age — Arquivo Secundário</title>
 <style>
-  /* --- ESTILOS GERAIS --- */
-  body { background: #121212; color: #eee; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-  ::-webkit-scrollbar { width: 8px; }
-  ::-webkit-scrollbar-track { background: #1a1a1a; }
-  ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #6D20C5; }
-
-  .editor-pane { width: 45%; padding: 20px; overflow-y: auto; border-right: 1px solid #333; background: #1a1a1a; display: flex; flex-direction: column; }
-  .preview-pane { width: 55%; padding: 20px; background: #000; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
-
-  h1 { font-size: 20px; color: #fff; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 5px 0; border-left: 4px solid #6D20C5; padding-left: 10px; }
-  h2 { border-bottom: 1px solid #444; padding-bottom: 5px; color: #ccc; font-size: 14px; margin-top: 25px; font-weight: 600; text-transform: uppercase; }
-  h3 { color: #8a40e3; font-size: 12px; margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 5px; }
-   
-  /* Inputs e Grupos */
-  .input-group { background: #222; padding: 10px; margin-bottom: 8px; border: 1px solid #333; border-radius: 4px; position: relative; transition: .2s; display: flex; flex-direction: column; gap: 5px; }
-  .input-group.dragging { opacity: 0.5; border: 1px dashed #6D20C5; }
-  .input-group:hover { border-color: #444; }
-   
-  /* Arrastar e Soltar */
-  .drag-handle { cursor: grab; color: #555; font-size: 16px; position: absolute; left: 5px; top: 5px; padding: 5px; z-index: 10; }
-  .drag-handle:hover { color: #6D20C5; }
-  .input-group { padding-left: 25px; }
-
-  label { display: block; font-size: 10px; color: #888; margin-bottom: 0px; text-transform: uppercase; font-weight: 700; }
-  input, select, textarea { width: 100%; background: #0f0f0f; border: 1px solid #333; color: #ddd; padding: 6px; font-size: 12px; box-sizing: border-box; border-radius: 2px; font-family: monospace; }
-  input:focus, select:focus, textarea:focus { border-color: #6D20C5; outline: none; background: #151515; }
-   
-  /* Smart Parser Area */
-  .smart-parser { background: #180a20; border: 1px dashed #6D20C5; color: #dcbdfc; height: 40px; font-size: 10px; margin-bottom: 10px; resize: vertical; }
-  .smart-parser::placeholder { color: #5e3a8c; font-style: italic; }
-
-  .row { display: flex; gap: 8px; }
-  .col { flex: 1; }
-
-  /* Botões */
-  .btn-group { display: flex; gap: 5px; margin-bottom: 20px; }
-  button { cursor: pointer; border: none; padding: 6px 10px; border-radius: 3px; font-weight: bold; transition: 0.2s; font-size: 11px; text-transform: uppercase; }
-  .btn-add { background: #2a2a2a; color: #aaa; width: 100%; margin-bottom: 5px; border: 1px dashed #444; }
-  .btn-add:hover { background: #333; color: #fff; border-color: #6D20C5; }
-   
-  .btn-remove { background: transparent; color: #662222; position: absolute; top: 5px; right: 5px; font-size: 14px; padding: 0 5px; }
-  .btn-remove:hover { color: #ff4444; background: transparent; }
-   
-  .btn-action { flex: 1; padding: 12px; color: #fff; font-size: 12px; }
-  .btn-generate { background: #6D20C5; }
-  .btn-generate:hover { background: #8a40e3; }
-  .btn-import { background: #333; color: #ccc; }
-  .btn-clear { background: #3a1111; color: #ffaaaa; }
-
-  /* CORREÇÃO AQUI: Em vez de display:none, usamos opacity:0 e pointer-events:none */
-  textarea#finalCode { position: absolute; opacity: 0; pointer-events: none; height: 1px; width: 1px; }
-
-  /* MODAL */
-  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: .3s; backdrop-filter: blur(4px); }
-  .modal-overlay.active { opacity: 1; pointer-events: all; }
-  .modal-box { background: #1a1a1a; border: 1px solid #6D20C5; width: 320px; padding: 25px; box-shadow: 0 0 30px rgba(109, 32, 197, 0.4); transform: scale(0.9); transition: .3s; text-align: center; border-radius: 4px; }
-  .modal-overlay.active .modal-box { transform: scale(1); }
-   
-  .modal-btn-row { display: flex; gap: 10px; margin-top: 20px; justify-content: center; }
-  .modal-btn { width: 100%; padding: 10px; color: #fff; }
-  .btn-ok { background: #6D20C5; }
-  .btn-ok:hover { background: #8a40e3; }
-   
-  .btn-danger { background: #800000; }
-  .btn-danger:hover { background: #ff0000; }
-  .btn-cancel { background: #333; }
-  .btn-cancel:hover { background: #555; }
-
-  #modalAlertBtns, #modalConfirmBtns { display: none; width: 100%; }
-
-   
-  #import-area { display: none; margin-bottom: 15px; background: #222; padding: 10px; border: 1px solid #444; }
-
-  /* PREVIEW CSS MINIFICADO */
-  .preview-area { width: 100%; max-width: 800px; }
-  .j-b{--p:#6D20C5;--b:#121212;--g:#1e1e1e;--t:#ccc;font:12px Segoe UI,sans-serif;background:var(--b);color:var(--t);border:1px solid #333;max-width:800px;margin:auto}
-  .j-b input{display:none}
-  .j-n{display:flex;background:#000;border-bottom:2px solid var(--p)}
-  .j-n label{flex:1;text-align:center;padding:10px;cursor:pointer;background:#0a0a0a;font-weight:700;text-transform:uppercase;transition:.3s}
-  #t1:checked~.j-n label[for="t1"],#t2:checked~.j-n label[for="t2"]{background:var(--p);color:#fff}
-  .j-c{display:none;padding:15px;animation:f .5s}
-  #t1:checked~.c1,#t2:checked~.c2{display:block}
-  @keyframes f{from{opacity:0}to{opacity:1}}
-  .i-c{background:var(--g);border:1px solid #333;margin-bottom:10px;padding:10px;display:grid;grid-template-columns:80px 1fr;gap:10px}
-  .i-m{width:100%;height:80px;object-fit:cover;border:1px solid #444}
-  .i-h{border-bottom:1px solid var(--p);padding-bottom:2px;margin-bottom:2px;display:flex;justify-content:space-between}
-  .i-n{color:#fff;font-weight:700;text-transform:uppercase}
-  .i-tp{font-size:9px;color:var(--p);font-weight:700;background:#000;padding:1px 4px;border-radius:2px}
-  .i-st{font:10px monospace;color:#999}.i-st b{color:#fff}
-  .i-d,.i-ef{line-height:1.3;font-size:11px}.i-ef{color:#dcbdfc;margin-top:2px}.i-ef b{color:var(--p)}
-  .l-bk{margin-bottom:20px}
-  .l-tt{background:linear-gradient(90deg,var(--p),transparent);color:#fff;padding:4px 10px;font-weight:700;text-transform:uppercase;font-size:11px;margin-bottom:5px;letter-spacing:1px}
-  .l-rw{display:flex;justify-content:space-between;background:var(--g);padding:6px 10px;margin-bottom:2px;align-items:center;font-size:11px}
-  .l-rw:hover{background:#333;border-left:2px solid var(--p)}
-  .l-dt{color:var(--p);font-weight:700;margin-right:10px;font-family:monospace}
-  .l-tx{flex:1;color:#ddd}
-  .l-lk{background:#000;color:#fff;text-decoration:none;padding:2px 6px;border-radius:2px}
-  .ap-bx{margin-bottom:10px;border:1px solid #333}
-  .ap-hd{background:#252525;padding:5px 10px;font-weight:700;color:#fff;display:flex;justify-content:space-between;align-items:center;font-size:11px}
-  .c-n{background:var(--p);padding:1px 5px;border-radius:3px;font-size:9px}
-  .ap-bd{padding:5px}
+:root{color-scheme:dark;--bg:#080c14;--sidebar:#0c101a;--panel:#111724;--panel2:#151b29;--line:#2a3141;--ink:#f2f3f8;--muted:#939cae;--pink:#e12a82;--blue:#8b93fa;--ok:#61dcb7;--radius:17px;font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 77% -20%,#31203955,transparent 41%),#080c14;color:var(--ink);min-height:100vh}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.38;cursor:not-allowed}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--pink);outline-offset:2px}a{color:#fd76b4}
+#app{display:grid;grid-template-columns:250px minmax(380px,1fr) minmax(360px,45%);min-height:100vh}.sidebar{position:sticky;top:0;height:100vh;min-height:0;background:linear-gradient(180deg,#101523,#0c101a);border-right:1px solid #262d3a;padding:26px 17px;display:flex;flex-direction:column;gap:20px;overflow-y:auto}.brand{display:flex;align-items:center;gap:11px;padding:2px 7px 18px;border-bottom:1px solid var(--line)}.brandmark{display:grid;place-items:center;width:41px;height:41px;border-radius:14px;background:linear-gradient(135deg,#f82d87,#6f46bd);font-size:20px;box-shadow:0 6px 24px #ec2d7840}.brand b{font-size:13px;letter-spacing:.17em;display:block}.brand span{font-size:10px;letter-spacing:.22em;color:var(--muted)}.label{display:block;color:var(--muted);text-transform:uppercase;font-weight:800;font-size:10px;letter-spacing:.16em;margin:0 0 9px}.aside-group{padding:0 6px}.volume-buttons{display:grid;gap:5px;max-height:33vh;overflow:auto}.volume-button{width:100%;border:1px solid transparent;border-radius:11px;display:flex;align-items:center;gap:8px;background:transparent;color:#b8c0d1;text-align:left;padding:11px 10px;min-width:0}.volume-button span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1}.volume-button.selected{background:#2b2032;border-color:#d72b7b69;color:#fff}.volume-button:hover{background:#212435}.dot{height:8px;width:8px;border-radius:50%;flex-shrink:0}.nav-btn{width:100%;display:flex;align-items:center;gap:11px;background:transparent;border:0;color:#aab2c4;text-align:left;padding:11px 13px;border-radius:11px;font-weight:650}.nav-btn:hover,.nav-btn.active{background:#251c2d;color:#fff}.nav-btn.active:before{content:"";height:20px;width:3px;border-radius:6px;background:var(--pink);margin-left:-8px}.side-bottom{margin-top:auto;padding:15px;border:1px solid #303647;border-radius:13px;background:#171c29}.side-bottom strong{display:block;font-size:12px}.side-bottom small{display:block;color:#98a1b0;font-size:11px;margin-top:5px}.side-bottom .save-dot{color:var(--ok)}.small-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 11px;border:1px solid #373e4f;border-radius:10px;background:#222938;color:#e8ecf6;font-weight:700;font-size:12px}.small-button:hover{background:#30384a}.small-button.pink{background:#be286e;border-color:#e03884;color:white}.small-button.danger{color:#f5a7b7}.small-button.textual{background:transparent;border-color:transparent;color:#bdc4d4}.small-button.block{width:100%}.main{min-width:0;height:100vh;overflow-y:auto;padding:28px clamp(20px,3vw,46px) 90px}.topline{display:flex;align-items:start;justify-content:space-between;gap:16px;margin-bottom:22px}.eyebrow{font-size:10px;letter-spacing:.18em;color:#db72ac;font-weight:850;text-transform:uppercase}.topline h1{font-size:clamp(25px,2.2vw,34px);letter-spacing:-.05em;line-height:1.17;margin:5px 0}.topline p{color:var(--muted);margin:4px 0 0;font-size:12px}.topactions{display:flex;flex-wrap:wrap;gap:7px;justify-content:end}.hero-editor{position:relative;border:1px solid #313849;min-height:194px;border-radius:19px;overflow:hidden;background:linear-gradient(100deg,#121727,#161527)}.hero-editor:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0e1422 2%,#101524a0 70%,#10152430),linear-gradient(0deg,#101524,transparent 70%);pointer-events:none}.hero-editor .banner-img{width:100%;height:200px;object-fit:cover;opacity:.66}.hero-editor .cover-fallback{height:200px;background:radial-gradient(circle at 85% 5%,#f2328f5b,transparent 45%),repeating-linear-gradient(45deg,#151a29 0 2px,#161b2b 2px 18px)}.hero-info{position:absolute;z-index:1;bottom:20px;left:23px;right:16px;pointer-events:none}.hero-info small{color:#ee88b8;text-transform:uppercase;letter-spacing:.2em;font-size:10px;font-weight:750}.hero-info h2{font-size:27px;letter-spacing:-.04em;line-height:1.1;margin:5px 0}.hero-info p{font-size:12px;color:#c3c7d2;margin:0}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:13px 0 25px}.stat{padding:14px;background:var(--panel);border:1px solid #2d3343;border-radius:13px}.stat strong{display:block;font-size:21px;letter-spacing:-.05em}.stat span{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.11em;font-weight:800}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 14px}.section-head h2{font-size:19px;letter-spacing:-.035em;margin:0}.section-head p{font-size:12px;color:var(--muted);margin:4px 0 0}.editor-card{background:linear-gradient(150deg,#161c2a,#111725);border:1px solid #343b4c;border-radius:15px;padding:15px 16px;margin:0 0 10px;box-shadow:0 2px 8px #00000018}.editor-card[draggable=true]{cursor:grab}.editor-card.dragging{opacity:.38;border-style:dashed}.editor-card.dragover{outline:2px dashed var(--pink)}.cardtop{display:flex;align-items:center;gap:7px;min-height:30px}.cardtop strong{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cardtop small{color:var(--muted)}.icon-btn{border:1px solid transparent;border-radius:7px;min-width:28px;height:27px;background:transparent;color:#909bb0}.icon-btn:hover{background:#2f3546;color:#fff}.icon-btn.delete:hover{background:#562438;color:#ff9ab7}.handle{color:#677084;font-size:18px;cursor:grab;user-select:none;padding:0 7px 0 0}.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.editor-grid .wide{grid-column:1/-1}.field label{display:block;color:#a3acbe;font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin:0 0 5px}.field input,.field textarea,.field select{width:100%;border:1px solid #353c4e;border-radius:9px;padding:9px 10px;min-height:38px;background:#0d121e;color:#f3f1f6;font-size:12px}.field textarea{min-height:77px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:#b93783;outline:0;box-shadow:0 0 0 2px #b9378329}.field input::placeholder,.field textarea::placeholder{color:#697487}.cardbody{margin-top:13px}.add-card{width:100%;padding:14px;border:1px dashed #575066;background:#211c2b99;color:#eba6cd;border-radius:13px;font-weight:850}.add-card:hover{background:#35213e}.empty-state{text-align:center;padding:29px;border:1px dashed #3c4355;border-radius:14px;color:#97a0b2;font-size:12px}.empty-state strong{display:block;color:#edf0f7;font-size:14px;margin-bottom:4px}.subsection{margin:20px 0 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}.subsection h3{margin:0;font-size:13px;color:#e6ddeb}.subsection span{font-size:11px;color:#838da0}.subrow{display:grid;grid-template-columns:108px minmax(0,1fr) minmax(130px,.65fr) auto;gap:8px;align-items:end;margin:10px 0;border:1px solid #2e3445;background:#111522;border-radius:10px;padding:9px}.subrow .field input{padding:7px 8px;min-height:34px}.subrow .icon-btn{align-self:center}.meta-panel{padding:20px;background:var(--panel);border-radius:15px;border:1px solid #353b4b;margin:15px 0}.meta-panel .editor-grid{gap:15px}.tip{font-size:11px;color:#8993a6;margin:8px 0;line-height:1.6}.pill{display:inline-block;border:1px solid #4e3e58;background:#2c1c32;color:#eaa9cc;font-size:10px;border-radius:20px;padding:3px 9px;letter-spacing:.04em;font-weight:800}.search-bar{width:100%;padding:12px 15px;border:1px solid #343b4b;border-radius:12px;background:#111725;color:#fff;margin-bottom:13px}.right{min-width:0;position:sticky;top:0;height:100vh;background:#0a0d16;border-left:1px solid #262d3a;display:flex;flex-direction:column}.preview-top{padding:22px 22px 15px;border-bottom:1px solid #252c3b;display:flex;align-items:center;justify-content:space-between;gap:10px}.preview-top b{font-size:14px}.preview-top small{color:#9fa8b6;display:block;font-size:11px}.preview-tabs{display:flex;gap:4px;background:#1a1f2e;border-radius:10px;padding:4px}.preview-tabs button{border:0;border-radius:7px;background:transparent;color:#a7aebc;padding:7px 12px;font-size:11px;font-weight:800}.preview-tabs button.on{background:#413049;color:#fff}.frame-wrap{flex:1;overflow:auto;padding:20px}.frame-wrap iframe{width:100%;min-height:610px;border:0;border-radius:12px;background:#0d1017;display:block}.code-view{display:none;width:100%;height:100%;background:#0f1420;color:#d5e8ef;border:1px solid #363e4f;border-radius:12px;font:11px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;resize:none;padding:16px;outline:0;word-break:break-all}.preview-bottom{border-top:1px solid #262d3a;padding:14px 20px 20px;background:#111623}.limitline{display:flex;align-items:center;gap:10px;justify-content:space-between;font-size:11px;color:#a3acbd;margin-bottom:9px}.meter{height:5px;border-radius:8px;background:#2b3140;overflow:hidden;margin-bottom:13px}.meter>div{height:100%;background:linear-gradient(90deg,#7061da,#e83a97);transition:width .2s}.meter.danger>div{background:#ff6377}.action-buttons{display:grid;grid-template-columns:1fr auto;gap:8px}.primary{border:0;border-radius:11px;background:linear-gradient(115deg,#d52980,#9e2eab);color:#fff;padding:13px 17px;font-weight:850;box-shadow:0 8px 25px #a7286b20}.primary:hover{filter:brightness(1.14)}.secondary{background:#2b3244;color:white;border:1px solid #42495a;border-radius:11px;padding:12px 15px;font-weight:800}.toast{position:fixed;bottom:25px;left:50%;transform:translate(-50%,12px);background:#242c39;border:1px solid #5f7185;box-shadow:0 15px 50px #0009;border-radius:11px;color:white;padding:12px 18px;z-index:9999;opacity:0;pointer-events:none;transition:.25s;max-width:min(520px,95vw)}.toast.show{opacity:1;transform:translate(-50%,0)}.dialog-back{position:fixed;inset:0;background:#02040bbf;display:none;z-index:999;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(7px)}.dialog-back.on{display:flex}.dialog{background:#171d2b;border:1px solid #434457;width:min(760px,100%);max-height:90vh;display:flex;flex-direction:column;border-radius:20px;box-shadow:0 20px 90px #000d;overflow:hidden}.dialog-head{display:flex;justify-content:space-between;align-items:start;padding:22px 24px 16px;border-bottom:1px solid #313949}.dialog-head h2{margin:0;font-size:20px}.dialog-head p{font-size:12px;color:#9ca6b9;margin:6px 0 0}.dialog-main{overflow:auto;padding:22px 24px}.dialog-foot{padding:17px 24px;display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid #313949}.import-area{height:220px;resize:vertical;width:100%;background:#090e17;border:1px solid #4c4960;color:#ddd;padding:13px;border-radius:11px;font:12px/1.6 ui-monospace,monospace}.radio-row{display:flex;flex-wrap:wrap;gap:13px;margin:15px 0}.radio-row label{font-size:12px;color:#d6dbea}.radio-row input{accent-color:#d42c84}.import-report{background:#172c2a;border:1px solid #427d70;padding:11px 15px;border-radius:10px;color:#aeeadf;font-size:12px;margin-top:12px}.export-list{display:grid;gap:9px}.export-entry{border:1px solid #373e50;background:#131927;border-radius:11px;padding:13px}.export-entry header{display:flex;align-items:center;justify-content:space-between;gap:15px}.export-entry h3{margin:0;font-size:13px}.export-entry p{margin:4px 0 0;font-size:11px;color:#98a3b4}.export-entry textarea{height:72px;width:100%;margin-top:10px;border:1px solid #373f50;background:#0c121b;color:#9dc7d6;padding:10px;border-radius:9px;font:10px ui-monospace,monospace}.warning{color:#ffb7ad!important}.divider{height:1px;background:#30394a;margin:18px 0}.hidden{display:none!important}
+@media(max-width:1300px){#app{grid-template-columns:205px minmax(320px,1fr) minmax(310px,42%)}.sidebar{padding:18px 11px}.main{padding:24px 22px}.frame-wrap{padding:13px}.subrow{grid-template-columns:80px 1fr;align-items:end}.subrow .field:nth-child(3){grid-column:1/-1}.subrow .icon-btn{grid-column:2;justify-self:end}}
+@media(max-width:1010px){#app{grid-template-columns:200px 1fr}.right{position:relative;grid-column:2;height:650px;border-top:1px solid #353d4d}.main{height:auto;overflow:visible}.sidebar{grid-row:1/3}.right .frame-wrap{padding:15px}.right iframe{height:100%!important}}
+@media(max-width:670px){#app{display:block}.sidebar{position:relative;height:auto;overflow:visible;padding:12px}.brand{padding-bottom:10px}.sidebar .aside-group{padding:0}.volume-buttons{display:flex;overflow-x:auto;max-height:none}.volume-button{width:auto;min-width:115px;max-width:220px}.sidebar nav{display:flex;overflow-x:auto;gap:3px}.nav-btn{width:auto;white-space:nowrap;padding:10px}.side-bottom{display:none}.main{padding:18px 14px}.topline{display:block}.topactions{justify-content:start;margin-top:13px}.hero-editor .banner-img,.hero-editor .cover-fallback{height:170px}.hero-info h2{font-size:23px}.stats{gap:6px}.stat{padding:9px}.stat strong{font-size:16px}.stat span{font-size:9px}.right{height:640px}.editor-grid{gap:9px}.subrow{grid-template-columns:1fr 1fr}.subrow .field:nth-child(2){grid-column:1/-1;grid-row:2}.subrow .field:nth-child(3){grid-column:1/-1}.subrow .icon-btn{grid-column:2;grid-row:1}.dialog-head,.dialog-main,.dialog-foot{padding:15px}}
 </style>
 </head>
 <body>
-
-  <div id="customModal" class="modal-overlay">
-    <div class="modal-box">
-      <span id="modalIcon" style="font-size:40px; display:block; margin-bottom:10px;">✅</span>
-      <span id="modalTitle" style="color:#fff; font-weight:bold; font-size: 16px; display:block; margin:5px 0; text-transform:uppercase; letter-spacing:1px;">Sucesso</span>
-      <span id="modalMsg" style="color:#ccc; font-size:13px; display:block; line-height:1.4;">Operação realizada.</span>
-       
-      <div class="modal-btn-row">
-        <div id="modalAlertBtns">
-            <button class="modal-btn btn-ok" onclick="closeModal()">ENTENDIDO</button>
-        </div>
-        <div id="modalConfirmBtns" style="display:none; gap:10px; width:100%; display:flex;">
-            <button class="modal-btn btn-danger" onclick="confirmDeleteAction()">EXCLUIR</button>
-            <button class="modal-btn btn-cancel" onclick="closeModal()">CANCELAR</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="editor-pane">
-    <h1>JKGA - Ficha Secundária</h1>
-    <p style="font-size:11px; color:#888;">O gerenciador amigo da vizinhança</p>
-
-    <div class="btn-group">
-      <button class="btn-action btn-generate" onclick="generateCode()">Copiar HTML</button>
-      <button class="btn-action btn-import" onclick="toggleImport()">Importar</button>
-      <button class="btn-action btn-clear" onclick="clearData()">Limpar</button>
-    </div>
-
-    <div id="import-area">
-        <label style="color:#fff;">Cole seu código HTML antigo aqui:</label>
-        <textarea id="importCode" rows="5" placeholder="Cole o código <div class='j-b'>...</div> aqui"></textarea>
-        <button class="btn-add" style="background:#6D20C5; color:white; border:none;" onclick="processImport()">Processar</button>
-    </div>
-
-    <div id="form-content">
-        <h2>Inventário</h2>
-        <div id="items-container" class="sortable-list"></div>
-        <button class="btn-add" onclick="addItem()">+ Item</button>
-
-        <h2>Registros</h2>
-        
-        <h3>Missões</h3>
-        <div id="missoes-container" class="sortable-list"></div>
-        <button class="btn-add" onclick="addLog('missoes-container')">+ Missão</button>
-
-        <h3>Quests</h3>
-        <div id="quests-container" class="sortable-list"></div>
-        <button class="btn-add" onclick="addLog('quests-container')">+ Quest</button>
-
-        <h3>Raids</h3>
-        <div id="raids-container" class="sortable-list"></div>
-        <button class="btn-add" onclick="addLog('raids-container')">+ Raid</button>
-
-        <h3>Eventos</h3>
-        <div id="eventos-container" class="sortable-list"></div>
-        <button class="btn-add" onclick="addLog('eventos-container')">+ Evento</button>
-
-        <h3>RPs Livres</h3>
-        <div id="rp-container" class="sortable-list"></div>
-        <button class="btn-add" onclick="addLog('rp-container')">+ RP Livre</button>
-
-        <h3>Ocorrências</h3>
-        <div id="occ-container" class="sortable-list"></div>
-        <button class="btn-add" onclick="addLog('occ-container')">+ Ocorrência</button>
-
-        <h3>Aulas</h3>
-        <div id="aulas-container" class="sortable-list"></div>
-        <button class="btn-add" onclick="addLog('aulas-container')">+ Aula</button>
-
-        <h3>Treinos de Atributo</h3>
-        <div id="attr-container" class="sortable-list"></div>
-        <button class="btn-add" onclick="addLog('attr-container')">+ Treino Atributo</button>
-
-        <h2>Categorias Personalizadas</h2>
-        <div id="custom-categories-container"></div>
-        <button class="btn-add" style="border-color:#6D20C5; color:#dcbdfc" onclick="addCustomCategory()">+ Nova Categoria</button>
-
-        <h2>Aptidões</h2>
-        <div id="aptitudes-container" class="sortable-list"></div>
-        <button class="btn-add" style="border-color: #6D20C5; color: #dcbdfc" onclick="addAptitudeBlock()">+ Categoria de Aptidão</button>
-    </div>
-    
-    <textarea id="finalCode"></textarea>
-  </div>
-
-  <div class="preview-pane">
-    <div class="preview-area" id="previewArea"></div>
-  </div>
-
+<div id="app">
+<aside class="sidebar"><div class="brand"><div class="brandmark">✦</div><div><b>GOLDEN AGE</b><span>ARQUIVO / SECUNDÁRIO</span></div></div><div class="aside-group"><div class="label">Seus volumes</div><div id="volumeList" class="volume-buttons"></div><button class="small-button block" id="newVolume" style="margin-top:8px">＋ Criar outro post</button></div><div class="aside-group"><div class="label">Área de trabalho</div><nav id="mainNav"><button class="nav-btn active" data-page="items">◈ &nbsp; Inventário</button><button class="nav-btn" data-page="logs">▤ &nbsp; Registros</button><button class="nav-btn" data-page="aptitudes">✧ &nbsp; Aptidões</button><button class="nav-btn" data-page="custom">⊞ &nbsp; Categorias</button><button class="nav-btn" data-page="settings">⚙ &nbsp; Aparência e opções</button></nav></div><div class="side-bottom"><strong><span class="save-dot">●</span> <span id="saveStatus">Salvo neste navegador</span></strong><small>Salvamento automático. Faça backups em JSON para não perder seus dados se limpar o navegador.</small><button class="small-button block" id="backupBtn" style="margin-top:12px">↓ Baixar backup</button></div></aside>
+<main class="main"><div class="topline"><div><div class="eyebrow">Arquivo pessoal • Golden Age RPG</div><h1 id="pageTitle">Inventário</h1><p id="pageDescription">Mantenha seus equipamentos e comprovantes em ordem.</p></div><div class="topactions"><button class="small-button" id="undoBtn" title="Desfazer última edição">↶ Desfazer</button><button class="small-button" id="importBtn">↥ Importar ficha</button><button class="small-button pink" id="exportBtn">↗ Gerar posts</button></div></div><div id="hero" class="hero-editor"></div><div id="stats" class="stats"></div><div id="editorContent"></div></main>
+<aside class="right"><div class="preview-top"><div><b>Visualização do fórum</b><small>Prévia isolada • Sem colisões entre posts</small></div><div class="preview-tabs"><button id="previewViewBtn" class="on">Visual</button><button id="codeViewBtn">HTML</button></div></div><div class="frame-wrap"><iframe id="previewFrame" title="Prévia da ficha" sandbox="allow-same-origin"></iframe><textarea id="codeView" class="code-view" readonly spellcheck="false" aria-label="HTML gerado"></textarea></div><div class="preview-bottom"><div class="limitline"><span id="countLabel">0 caracteres</span><span id="limitLabel">Limite</span></div><div class="meter" id="countMeter"><div id="meterFill"></div></div><div class="action-buttons"><button class="primary" id="copyBtn">⧉ Copiar HTML deste post</button><button class="secondary" id="openExportBtn" title="Exportação por partes">⋯</button></div></div></aside>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div id="modal" class="dialog-back" role="presentation"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="dialog-head"><div><h2 id="dialogTitle">Importar</h2><p id="dialogDesc"></p></div><button class="icon-btn" id="closeModal" aria-label="Fechar">✕</button></div><div id="dialogMain" class="dialog-main"></div><div id="dialogFoot" class="dialog-foot"></div></div></div>
 <script>
-// --- VARIÁVEIS GLOBAIS ---
-let draggedItem = null;
-let elementToDelete = null; // Armazena o elemento que será deletado
-
-// --- CONFIG ---
-const aptList = [
-  "Combate Desarmado", "Espadas Longas", "Machados Longos", "Martelos Longos", "Clavas", "Arcos Longos", 
-  "Escalada", "Acrobacia", "Resistência", "Mitridatismo", "Espadas Curtas", "Adagas", "Lâminas Duplas", 
-  "Machados Curtos", "Martelos Curtos", "Lanças", "Foices", "Bastões", "Correntes", "Arcos Curtos", 
-  "Balestras", "Arremesso de Armas", "Pistolas/Revólveres", "Espingardas", "Rifles de Precisão", 
-  "Rifles de Assalto", "Submetralhadoras", "Metralhadoras Leves", "Furtividade", "Natação", "Celeridade",
-  "Feitiços", "Barreiras", "Pactos", "Percepção Mágica", "Manipulação", "Vontade", "Primeiros Socorros", 
-  "Técnica Reversa", "Percepção Visual", "Sobrevivência"
-];
-
-// --- SISTEMA DE MODAL AVANÇADO ---
-function showModal(title, msg, type = 'info') {
-    const modal = document.getElementById('customModal');
-    const alertBtns = document.getElementById('modalAlertBtns');
-    const confirmBtns = document.getElementById('modalConfirmBtns');
-
-    document.getElementById('modalTitle').innerText = title;
-    document.getElementById('modalMsg').innerText = msg;
-    
-    // Configura ícone
-    const icon = document.getElementById('modalIcon');
-    if(type === 'success') icon.innerText = '✅';
-    else if(type === 'error') icon.innerText = '❌';
-    else if(type === 'warning') icon.innerText = '⚠️';
-    else icon.innerText = 'ℹ️';
-
-    // Configura botões
-    if(type === 'confirm') {
-        alertBtns.style.display = 'none';
-        confirmBtns.style.display = 'flex';
-    } else {
-        alertBtns.style.display = 'block';
-        confirmBtns.style.display = 'none';
-    }
-
-    modal.classList.add('active');
-}
-
-function closeModal() {
-    document.getElementById('customModal').classList.remove('active');
-    elementToDelete = null; // Limpa o alvo
-}
-
-// --- LÓGICA DE DELEÇÃO SEGURA ---
-function requestDelete(element, type) {
-    elementToDelete = element;
-    
-    let title = "Confirmação";
-    let msg = "Tem certeza?";
-
-    // Personalização da mensagem
-    if(type === 'item') {
-        title = "Descartar Item?";
-        msg = "Você está prestes a remover este equipamento. Essa ação não pode ser desfeita.";
-    } else if (type === 'log') {
-        title = "Queimar Registro?";
-        msg = "Deseja apagar este histórico de missão/treino? A comprovação será perdida.";
-    } else if (type === 'aptidao') {
-        title = "Esquecer Estilo?";
-        msg = "Isso apagará a categoria inteira e todos os treinos dentro dela.";
-    } else if (type === 'treino') {
-        title = "Apagar Treino?";
-        msg = "Remover este treino específico da lista?";
-    }
-
-    showModal(title, msg, 'confirm');
-}
-
-function confirmDeleteAction() {
-    if(elementToDelete) {
-        elementToDelete.remove();
-        updatePreview();
-        saveData();
-        closeModal();
-    }
-}
-
-// --- DRAG & DROP ---
-function enableDrag(element) {
-    const handle = element.querySelector('.drag-handle');
-    handle.addEventListener('mousedown', () => { element.setAttribute('draggable', 'true'); });
-    element.addEventListener('dragstart', (e) => {
-        draggedItem = element; e.dataTransfer.effectAllowed = 'move';
-        setTimeout(() => element.classList.add('dragging'), 0);
-    });
-    element.addEventListener('dragend', () => {
-        element.setAttribute('draggable', 'false'); element.classList.remove('dragging');
-        draggedItem = null; saveData(); updatePreview();
-    });
-    element.addEventListener('dragover', (e) => {
-        e.preventDefault(); const sortList = element.parentNode;
-        const siblings = [...sortList.querySelectorAll('.input-group:not(.dragging)')];
-        let nextSibling = siblings.find(sib => e.clientY <= sib.getBoundingClientRect().top + sib.offsetHeight / 2);
-        sortList.insertBefore(draggedItem, nextSibling);
-    });
-}
-
-function createRemoveBtn(parent, type='log') {
-  const btn = document.createElement('button');
-  btn.className = 'btn-remove';
-  btn.innerHTML = '&times;';
-  // Agora chama o requestDelete em vez de remover direto
-  btn.onclick = () => requestDelete(parent, type);
-  return btn;
-}
-
-// --- PARSER ---
-function parseStats(textarea) {
-    const text = textarea.value;
-    const parent = textarea.parentElement;
-    if(!text.trim()) return;
-
-    const nameMatch = text.split('\n')[0];
-    const typeMatch = text.match(/(?:Tipo|Classificação):\s*(.*?)(?:\n|$)/i);
-    const dmgMatch = text.match(/(?:Dano|Ataque):\s*(.*?)(?:\n|$)/i);
-    const durMatch = text.match(/(?:Durabilidade|Resistência):\s*(.*?)(?:\n|$)/i);
-    const descMatch = text.match(/(?:Descrição|Desc):\s*([\s\S]*?)(?:Efeito:|$)/i);
-    const effMatch = text.match(/(?:Efeito|Habilidade):\s*([\s\S]*)/i);
-
-    if(nameMatch) parent.querySelector('.i-name').value = nameMatch.trim();
-    if(typeMatch) parent.querySelector('.i-type').value = typeMatch[1].trim();
-    if(dmgMatch) parent.querySelector('.i-dmg').value = dmgMatch[1].trim();
-    if(durMatch) parent.querySelector('.i-dur').value = durMatch[1].trim();
-    if(descMatch) parent.querySelector('.i-desc').value = descMatch[1].trim();
-    if(effMatch) parent.querySelector('.i-eff').value = effMatch[1].trim();
-    
-    updatePreview(); saveData();
-    textarea.style.borderColor = '#0f0'; setTimeout(() => textarea.style.borderColor = '#6D20C5', 500);
-}
-
-// --- CRIAÇÃO DE ELEMENTOS ---
-function addItem(data = {}) {
-  const div = document.createElement('div');
-  div.className = 'input-group item-entry';
-  div.innerHTML = `
-    <span class="drag-handle">☰</span>
-    <textarea class="smart-parser" placeholder="Solte a descrição bruta aqui. A ferramenta vai tentar se organizar sozinha. Se falhar, faça os ajustes manualmente." oninput="parseStats(this)"></textarea>
-    <div class="row"><div class="col"><label>Nome</label><input type="text" class="i-name" value="${data.name || ''}" oninput="updatePreview(); saveData()"></div><div class="col"><label>Tipo</label><input type="text" class="i-type" value="${data.type || ''}" oninput="updatePreview(); saveData()"></div></div>
-    <label>Imagem URL</label><input type="text" class="i-img" value="${data.img || ''}" placeholder="https://..." oninput="updatePreview(); saveData()">
-    <div class="row"><div class="col"><label>Dano</label><input type="text" class="i-dmg" value="${data.dmg || ''}" oninput="updatePreview(); saveData()"></div><div class="col"><label>Durab.</label><input type="text" class="i-dur" value="${data.dur || ''}" oninput="updatePreview(); saveData()"></div></div>
-    <label>Descrição</label><textarea class="i-desc" rows="1" oninput="updatePreview(); saveData()">${data.desc || ''}</textarea>
-    <label>Efeito</label><textarea class="i-eff" rows="1" oninput="updatePreview(); saveData()">${data.eff || ''}</textarea>
-  `;
-  // Passa o tipo 'item' para a confirmação personalizada
-  div.appendChild(createRemoveBtn(div, 'item'));
-  document.getElementById('items-container').appendChild(div);
-  enableDrag(div);
-  return div;
-}
-
-function addLog(containerId, data = {}) {
-  const div = document.createElement('div');
-  div.className = 'input-group log-entry';
-  div.dataset.type = containerId;
-  div.innerHTML = `
-    <span class="drag-handle">☰</span>
-    <div class="row">
-      <div style="flex:0 0 50px"><label>Data</label><input type="text" class="l-date" value="${data.date || ''}" oninput="updatePreview(); saveData()"></div>
-      <div class="col"><label>Descrição</label><input type="text" class="l-text" value="${data.text || ''}" oninput="updatePreview(); saveData()"></div>
-      <div style="flex:0 0 40px"><label>Link</label><input type="text" class="l-link" value="${data.link || ''}" oninput="updatePreview(); saveData()"></div>
-    </div>
-  `;
-  div.appendChild(createRemoveBtn(div, 'log'));
-  document.getElementById(containerId).appendChild(div);
-  enableDrag(div);
-  updatePreview(); saveData();
-}
-
-function addCustomCategory(data = {}) {
-  const container = document.getElementById('custom-categories-container');
-  const div = document.createElement('div');
-  div.className = 'input-group custom-cat-block';
-  div.innerHTML = `
-    <span class="drag-handle">☰</span>
-    <label style="color:#6D20C5;font-weight:bold;">Nome da Categoria</label>
-    <input type="text" class="cat-name" value="${data.name || ''}" placeholder="Ex: Guerras, Torneios, Contratos..." oninput="updatePreview(); saveData()">
-    <div class="cat-logs-container" style="margin-top:10px;border-top:1px dashed #444;padding-top:5px;"></div>
-    <button class="btn-add" style="margin-top:5px; font-size:10px" onclick="addCatLog(this)">+ Entrada</button>
-  `;
-  div.appendChild(createRemoveBtn(div, 'aptidao'));
-  container.appendChild(div);
-  enableDrag(div);
-  if (data.logs && data.logs.length > 0) data.logs.forEach(log => addCatLog(div.querySelector('.btn-add'), log));
-  updatePreview(); saveData();
-}
-
-function addCatLog(btn, data = {}) {
-  const container = btn.previousElementSibling;
-  const div = document.createElement('div');
-  div.className = 'log-entry cat-entry';
-  div.style.marginBottom = '5px';
-  div.innerHTML = `<div class="row"><div style="flex:0 0 50px"><input type="text" class="l-date" value="${data.date || ''}" placeholder="Dt" oninput="updatePreview(); saveData()"></div><div class="col"><input type="text" class="l-text" value="${data.text || ''}" placeholder="Desc..." oninput="updatePreview(); saveData()"></div><div style="flex:0 0 40px"><input type="text" class="l-link" value="${data.link || ''}" placeholder="#" oninput="updatePreview(); saveData()"></div><button onclick="requestDelete(this.parentElement.parentElement, 'treino')" style="background:transparent; color:#882222; font-weight:bold; padding:0 5px; border:none; cursor:pointer;">x</button></div>`;
-  container.appendChild(div);
-  updatePreview(); saveData();
-}
-
-function addAptitudeBlock(data = {}) {
-  const container = document.getElementById('aptitudes-container');
-  const div = document.createElement('div');
-  div.className = 'input-group apt-block';
-  let options = aptList.map(a => `<option value="${a}" ${data.name === a ? 'selected' : ''}>${a}</option>`).join('');
-   
-  div.innerHTML = `<span class="drag-handle">☰</span><label style="color:#6D20C5;font-weight:bold;">Categoria</label><select class="apt-select" onchange="updatePreview(); saveData()">${options}</select><div class="apt-logs-container" style="margin-top:10px;border-top:1px dashed #444;padding-top:5px;"></div><button class="btn-add" style="margin-top:5px; font-size:10px" onclick="addAptLog(this)">+ Treino</button>`;
-   
-  div.appendChild(createRemoveBtn(div, 'aptidao'));
-  container.appendChild(div);
-  enableDrag(div);
-   
-  if(data.logs && data.logs.length > 0) data.logs.forEach(log => addAptLog(div.querySelector('.btn-add'), log));
-  updatePreview(); saveData();
-}
-
-function addAptLog(btn, data = {}) {
-  const container = btn.previousElementSibling;
-  const div = document.createElement('div');
-  div.className = 'log-entry apt-entry'; 
-  div.style.marginBottom = "5px";
-  // Botão inline manual, chamando requestDelete
-  div.innerHTML = `<div class="row"><div style="flex:0 0 50px"><input type="text" class="l-date" value="${data.date || ''}" placeholder="Dt" oninput="updatePreview(); saveData()"></div><div class="col"><input type="text" class="l-text" value="${data.text || ''}" placeholder="Desc..." oninput="updatePreview(); saveData()"></div><div style="flex:0 0 40px"><input type="text" class="l-link" value="${data.link || ''}" placeholder="#" oninput="updatePreview(); saveData()"></div><button onclick="requestDelete(this.parentElement.parentElement, 'treino')" style="background:transparent; color:#882222; font-weight:bold; padding:0 5px; border:none; cursor:pointer;">x</button></div>`;
-  container.appendChild(div);
-  updatePreview(); saveData();
-}
-
-// --- GERAÇÃO HTML (CORRIGIDO) ---
-function generateHTMLString() {
-  let itemsHTML = '';
-  document.querySelectorAll('.item-entry').forEach(el => {
-    itemsHTML += `<div class="i-c"><img src="${el.querySelector('.i-img').value || 'https://via.placeholder.com/80'}" class="i-m"><div><div class="i-h"><span class="i-n">${el.querySelector('.i-name').value}</span><span class="i-tp">${el.querySelector('.i-type').value}</span></div><div class="i-st"><b>Dano:</b> ${el.querySelector('.i-dmg').value} | <b>Durabilidade:</b> ${el.querySelector('.i-dur').value}</div><div class="i-d">${el.querySelector('.i-desc').value}</div><div class="i-ef"><b>Efeito:</b> ${el.querySelector('.i-eff').value}</div></div></div>`;
-  });
-
-  const getBlock = (id, title) => {
-    let content = '';
-    document.getElementById(id).querySelectorAll('.log-entry').forEach(el => {
-      content += `<div class="l-rw"><span class="l-dt">${el.querySelector('.l-date').value}</span><span class="l-tx">${el.querySelector('.l-text').value}</span><a href="${el.querySelector('.l-link').value}" class="l-lk">LINK</a></div>`;
-    });
-    return `<div class="l-bk"><div class="l-tt">${title}</div>${content}</div>`;
-  };
-
-  let aptHTML = '';
-  document.querySelectorAll('.apt-block').forEach(blk => {
-    const name = blk.querySelector('.apt-select').value;
-    const logs = blk.querySelectorAll('.apt-entry');
-    let logsStr = '';
-    logs.forEach(l => { logsStr += `<div class="l-rw"><span class="l-dt">${l.querySelector('.l-date').value}</span><span class="l-tx">${l.querySelector('.l-text').value}</span><a href="${l.querySelector('.l-link').value}" class="l-lk">LINK</a></div>`; });
-    aptHTML += `<div class="ap-bx"><div class="ap-hd">${name} <span class="c-n">${logs.length < 10 ? '0'+logs.length : logs.length} Treinos</span></div><div class="ap-bd">${logsStr}</div></div>`;
-  });
-
-  const css = `<style>.j-b{--p:#6D20C5;--b:#121212;--g:#1e1e1e;--t:#ccc;font:12px Segoe UI,sans-serif;background:var(--b);color:var(--t);border:1px solid #333;max-width:800px;margin:auto}.j-b input{display:none}.j-n{display:flex;background:#000;border-bottom:2px solid var(--p)}.j-n label{flex:1;text-align:center;padding:10px;cursor:pointer;background:#0a0a0a;font-weight:700;text-transform:uppercase;transition:.3s}#t1:checked~.j-n label[for="t1"],#t2:checked~.j-n label[for="t2"]{background:var(--p);color:#fff}.j-c{display:none;padding:15px;animation:f .5s}#t1:checked~.c1,#t2:checked~.c2{display:block}@keyframes f{from{opacity:0}to{opacity:1}}.i-c{background:var(--g);border:1px solid #333;margin-bottom:10px;padding:10px;display:grid;grid-template-columns:80px 1fr;gap:10px}.i-m{width:100%;height:80px;object-fit:cover;border:1px solid #444}.i-h{border-bottom:1px solid var(--p);padding-bottom:2px;margin-bottom:2px;display:flex;justify-content:space-between}.i-n{color:#fff;font-weight:700;text-transform:uppercase}.i-tp{font-size:9px;color:var(--p);font-weight:700;background:#000;padding:1px 4px;border-radius:2px}.i-st{font:10px monospace;color:#999}.i-st b{color:#fff}.i-d,.i-ef{line-height:1.3;font-size:11px}.i-ef{color:#dcbdfc;margin-top:2px}.i-ef b{color:var(--p)}.l-bk{margin-bottom:20px}.l-tt{background:linear-gradient(90deg,var(--p),transparent);color:#fff;padding:4px 10px;font-weight:700;text-transform:uppercase;font-size:11px;margin-bottom:5px;letter-spacing:1px}.l-rw{display:flex;justify-content:space-between;background:var(--g);padding:6px 10px;margin-bottom:2px;align-items:center;font-size:11px}.l-rw:hover{background:#333;border-left:2px solid var(--p)}.l-dt{color:var(--p);font-weight:700;margin-right:10px;font-family:monospace}.l-tx{flex:1;color:#ddd}.l-lk{background:#000;color:#fff;text-decoration:none;padding:2px 6px;border-radius:2px}.ap-bx{margin-bottom:10px;border:1px solid #333}.ap-hd{background:#252525;padding:5px 10px;font-weight:700;color:#fff;display:flex;justify-content:space-between;align-items:center;font-size:11px}.c-n{background:var(--p);padding:1px 5px;border-radius:3px;font-size:9px}.ap-bd{padding:5px}</style>`;
-  let customCatHTML = '';
-  document.querySelectorAll('.custom-cat-block').forEach(blk => {
-    const name = blk.querySelector('.cat-name').value || 'Categoria';
-    const entries = blk.querySelectorAll('.cat-entry');
-    let entriesStr = '';
-    entries.forEach(l => { entriesStr += `<div class="l-rw"><span class="l-dt">${l.querySelector('.l-date').value}</span><span class="l-tx">${l.querySelector('.l-text').value}</span><a href="${l.querySelector('.l-link').value}" class="l-lk">LINK</a></div>`; });
-    customCatHTML += `<div class="l-bk"><div class="l-tt">${name}</div>${entriesStr}</div>`;
-  });
-
-  return css + `<div class="j-b"><input type="radio" name="g" id="t1" checked><input type="radio" name="g" id="t2"><div class="j-n"><label for="t1">Inventário</label><label for="t2">Registros</label></div><div class="j-c c1">${itemsHTML}</div><div class="j-c c2">${getBlock('missoes-container', 'Missões')}${getBlock('quests-container', 'Quests')}${getBlock('raids-container', 'Raids')}${getBlock('eventos-container', 'Eventos')}${getBlock('rp-container', 'RPs Livres')}${getBlock('occ-container', 'Ocorrências')}${getBlock('aulas-container', 'Aulas')}<div class="l-bk"><div class="l-tt">Treinos de Aptidão</div>${aptHTML}</div>${getBlock('attr-container', 'Treinos de Atributo')}${customCatHTML}</div></div>`;
-}
-
-function updatePreview() { 
-    const area = document.getElementById('previewArea');
-    const t1State = area.querySelector('#t1') ? area.querySelector('#t1').checked : true;
-    area.innerHTML = generateHTMLString(); 
-    if(area.querySelector('#t1')) {
-        area.querySelector('#t1').checked = t1State;
-        area.querySelector('#t2').checked = !t1State;
-    }
-}
-
-function generateCode() {
-  const code = generateHTMLString();
-
-  // Tenta usar a API moderna (mais confiável)
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(code).then(() => {
-        showModal('Código Copiado!', 'Cole no fórum ou na sua ficha.', 'success');
-    }).catch(err => {
-        // Fallback se falhar
-        fallbackCopy(code);
-    });
-  } else {
-    // Fallback para navegadores antigos
-    fallbackCopy(code);
-  }
-}
-
-function fallbackCopy(text) {
-    const txt = document.getElementById('finalCode');
-    txt.value = text;
-    txt.select();
-    document.execCommand('copy');
-    showModal('Código Copiado!', 'Cole no fórum ou na sua ficha.', 'success');
-}
-
-// --- PERSISTÊNCIA ---
-function saveData() {
-    const data = { items: [], missoes: [], quests: [], raids: [], eventos: [], rp: [], occ: [], aulas: [], attr: [], aptitudes: [], customCategories: [] };
-    
-    document.querySelectorAll('.item-entry').forEach(el => {
-        data.items.push({
-            name: el.querySelector('.i-name').value, type: el.querySelector('.i-type').value, img: el.querySelector('.i-img').value,
-            dmg: el.querySelector('.i-dmg').value, dur: el.querySelector('.i-dur').value, desc: el.querySelector('.i-desc').value, eff: el.querySelector('.i-eff').value
-        });
-    });
-
-    const grabLogs = (id) => {
-        const arr = [];
-        document.getElementById(id).querySelectorAll('.log-entry').forEach(el => {
-            arr.push({ date: el.querySelector('.l-date').value, text: el.querySelector('.l-text').value, link: el.querySelector('.l-link').value });
-        });
-        return arr;
-    };
-    data.missoes = grabLogs('missoes-container'); data.quests = grabLogs('quests-container'); data.raids = grabLogs('raids-container');
-    data.eventos = grabLogs('eventos-container'); data.rp = grabLogs('rp-container'); data.occ = grabLogs('occ-container'); data.aulas = grabLogs('aulas-container'); data.attr = grabLogs('attr-container');
-
-    document.querySelectorAll('.apt-block').forEach(blk => {
-        const logs = [];
-        blk.querySelectorAll('.apt-entry').forEach(l => {
-            logs.push({ date: l.querySelector('.l-date').value, text: l.querySelector('.l-text').value, link: l.querySelector('.l-link').value });
-        });
-        data.aptitudes.push({ name: blk.querySelector('.apt-select').value, logs: logs });
-    });
-
-    document.querySelectorAll('.custom-cat-block').forEach(blk => {
-        const logs = [];
-        blk.querySelectorAll('.cat-entry').forEach(l => {
-            logs.push({ date: l.querySelector('.l-date').value, text: l.querySelector('.l-text').value, link: l.querySelector('.l-link').value });
-        });
-        data.customCategories.push({ name: blk.querySelector('.cat-name').value, logs: logs });
-    });
-
-    localStorage.setItem('jkga_sec_v3', JSON.stringify(data));
-}
-
-function loadData() {
-    const saved = localStorage.getItem('jkga_sec_v3');
-    if(!saved) return;
-    const data = JSON.parse(saved);
-    // Migração: Corrida → Celeridade
-    if(data.aptitudes) data.aptitudes.forEach(a => { if(a.name === 'Corrida') a.name = 'Celeridade'; });
-    repopulateForm(data);
-}
-
-function repopulateForm(data) {
-    document.getElementById('items-container').innerHTML = '';
-    ['missoes-container','quests-container','raids-container','eventos-container','rp-container','occ-container','aulas-container','attr-container'].forEach(id => document.getElementById(id).innerHTML = '');
-    document.getElementById('aptitudes-container').innerHTML = '';
-    document.getElementById('custom-categories-container').innerHTML = '';
-
-    if(data.items) data.items.forEach(i => addItem(i));
-    if(data.missoes) data.missoes.forEach(l => addLog('missoes-container', l));
-    if(data.quests) data.quests.forEach(l => addLog('quests-container', l));
-    if(data.raids) data.raids.forEach(l => addLog('raids-container', l));
-    if(data.eventos) data.eventos.forEach(l => addLog('eventos-container', l));
-    if(data.rp) data.rp.forEach(l => addLog('rp-container', l));
-    if(data.occ) data.occ.forEach(l => addLog('occ-container', l));
-    if(data.aulas) data.aulas.forEach(l => addLog('aulas-container', l));
-    if(data.attr) data.attr.forEach(l => addLog('attr-container', l));
-    if(data.aptitudes) data.aptitudes.forEach(a => addAptitudeBlock(a));
-    if(data.customCategories) data.customCategories.forEach(c => addCustomCategory(c));
-    updatePreview();
-}
-
-function clearData() {
-    // Usamos o confirm nativo aqui apenas para o reset total, mas poderíamos usar o modal customizado se quisesse
-    if(confirm("Deseja apagar TODO o progresso salvo?")) { localStorage.removeItem('jkga_sec_v3'); location.reload(); }
-}
-
-function toggleImport() { document.getElementById('import-area').style.display = document.getElementById('import-area').style.display === 'block' ? 'none' : 'block'; }
-
-function processImport() {
-    const code = document.getElementById('importCode').value;
-    if(!code) return showModal('Erro', 'Caixa vazia.', 'error');
-    try {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(code, 'text/html');
-        const importedData = { items: [], missoes: [], quests: [], raids: [], eventos: [], rp: [], occ: [], aulas: [], attr: [], aptitudes: [], customCategories: [] };
-
-        doc.querySelectorAll('.i-c').forEach(el => {
-            const stats = el.querySelector('.i-st').innerHTML;
-            importedData.items.push({
-                name: el.querySelector('.i-n').innerText, 
-                type: el.querySelector('.i-tp').innerText, 
-                img: el.querySelector('.i-m').src,
-                // Regex do Dano mantido (busca até a barra vertical |)
-                dmg: stats.match(/Dano:<\/b>\s*(.*?)\s*\|/) ? stats.match(/Dano:<\/b>\s*(.*?)\s*\|/)[1] : '',
-                // CORREÇÃO: Agora busca tudo que não seja um símbolo de tag (<)
-                dur: stats.match(/Durabilidade:<\/b>\s*([^<]*)/) ? stats.match(/Durabilidade:<\/b>\s*([^<]*)/)[1].trim() : '',
-                desc: el.querySelector('.i-d').innerText, 
-                eff: el.querySelector('.i-ef').innerText.replace('Efeito: ', '')
-            });
-        });
-
-        doc.querySelectorAll('.l-bk').forEach(bk => {
-            const title = bk.querySelector('.l-tt').innerText.toUpperCase();
-            const logs = [];
-            bk.querySelectorAll('.l-rw').forEach(rw => logs.push({ date: rw.querySelector('.l-dt').innerText, text: rw.querySelector('.l-tx').innerText, link: rw.querySelector('.l-lk').getAttribute('href') }));
-            
-            if(title.includes('MISSÕES')) importedData.missoes = logs;
-            else if(title.includes('QUESTS')) importedData.quests = logs;
-            else if(title.includes('RAIDS')) importedData.raids = logs;
-            else if(title.includes('EVENTOS')) importedData.eventos = logs;
-            else if(title.includes('RPS LIVRES')) importedData.rp = logs;
-            else if(title.includes('OCORRÊNCIAS')) importedData.occ = logs;
-            else if(title.includes('AULAS')) importedData.aulas = logs;
-            else if(title.includes('TREINOS DE ATRIBUTO')) importedData.attr = logs;
-            else if(!['MISSÕES','QUESTS','RAIDS','EVENTOS','RPS LIVRES','OCORRÊNCIAS','AULAS','TREINOS DE ATRIBUTO','TREINOS DE APTIDÃO'].some(k => title.includes(k))) {
-                importedData.customCategories.push({ name: bk.querySelector('.l-tt').innerText, logs: logs });
-            }
-            else if(title.includes('TREINOS DE APTIDÃO')) {
-                bk.querySelectorAll('.ap-bx').forEach(ab => {
-                    const aptName = ab.querySelector('.ap-hd').childNodes[0].textContent.trim();
-                    const aptLogs = [];
-                    ab.querySelectorAll('.l-rw').forEach(rw => aptLogs.push({ date: rw.querySelector('.l-dt').innerText, text: rw.querySelector('.l-tx').innerText, link: rw.querySelector('.l-lk').getAttribute('href') }));
-                    importedData.aptitudes.push({ name: aptName === 'Corrida' ? 'Celeridade' : aptName, logs: aptLogs });
-                });
-            }
-        });
-        repopulateForm(importedData); saveData(); showModal('Importado', 'Dados carregados com sucesso.', 'success'); toggleImport();
-    } catch(e) { console.error(e); showModal('Erro', 'Código inválido ou estrutura incompatível.', 'error'); }
-}
-
-loadData();
-if(document.querySelectorAll('.item-entry').length === 0) addItem();
-updatePreview();
+(()=>{'use strict';
+const STORAGE='golden_age_secondary_manager_v5',LEGACY='jkga_sec_v3',VERSION=5;
+const TYPES=[['missoes','Missões'],['quests','Quests'],['raids','Raids'],['eventos','Eventos'],['rp','RPs Livres'],['occ','Ocorrências'],['aulas','Aulas'],['attr','Treinos de Atributo']];
+const APT=['Combate Desarmado','Espadas Longas','Machados Longos','Martelos Longos','Clavas','Arcos Longos','Escalada','Acrobacia','Resistência','Mitridatismo','Espadas Curtas','Adagas','Lâminas Duplas','Machados Curtos','Martelos Curtos','Lanças','Foices','Bastões','Correntes','Arcos Curtos','Balestras','Arremesso de Armas','Pistolas/Revólveres','Espingardas','Rifles de Precisão','Rifles de Assalto','Submetralhadoras','Metralhadoras Leves','Furtividade','Natação','Celeridade','Feitiços','Barreiras','Pactos','Percepção Mágica','Manipulação','Vontade','Primeiros Socorros','Técnica Reversa','Percepção Visual','Sobrevivência'];
+const by=id=>document.getElementById(id), uid=()=>typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():('id_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)), clean=v=>String(v??''), esc=v=>clean(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])), nl=v=>esc(v).replace(/\r?\n/g,'<br>'), safeUrl=v=>{try{const u=new URL(clean(v).trim());return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return ''}}, safeColor=c=>/^#[0-9a-f]{6}$/i.test(c||'')?c:'#d52c86', stat=(t,l='')=>({name:clean(t),sub:clean(l)}), item=(o={})=>({id:o.id||uid(),name:clean(o.name),type:clean(o.type),img:clean(o.img),dmg:clean(o.dmg),dur:clean(o.dur),desc:clean(o.desc),eff:clean(o.eff)}), entry=(o={})=>({id:o.id||uid(),date:clean(o.date),text:clean(o.text),link:clean(o.link)}), block=(o={})=>({id:o.id||uid(),name:clean(o.name),logs:Array.isArray(o.logs)?o.logs.map(entry):[]});
+function volume(o={}){const logs=Object.fromEntries(TYPES.map(([k])=>[k,Array.isArray(o.logs?.[k])?o.logs[k].map(entry):Array.isArray(o[k])?o[k].map(entry):[]]));return {id:o.id||uid(),title:clean(o.title||'Arquivo secundário'),subtitle:clean(o.subtitle||'Documentação, inventário e histórico'),banner:clean(o.banner),accent:safeColor(o.accent),items:(o.items||[]).map(item),logs,aptitudes:(o.aptitudes||[]).map(x=>block({...x,name:x.name==='Corrida'?'Celeridade':x.name})),customCategories:(o.customCategories||[]).map(block)};}
+let state={version:VERSION,selected:'',volumes:[],settings:{limit:65000}},page='items',filter='',previewMode='visual',undoStack=[],dragged=null,saveTimer=null,toastTimer=null;
+function load(){try{const raw=localStorage.getItem(STORAGE);if(raw){const d=JSON.parse(raw);if(d&&Array.isArray(d.volumes)){state.volumes=d.volumes.map(volume);state.selected=state.volumes[Math.max(0,d.volumes.findIndex(v=>v.id===d.selected))]?.id||state.volumes[0]?.id||'';state.settings.limit=Math.max(5000,Number(d.settings?.limit)||65000);return;}}const old=localStorage.getItem(LEGACY);if(old){const d=JSON.parse(old);state.volumes=[volume({...d,title:'Ficha antiga migrada'})];state.selected=state.volumes[0].id;saveNow();showToast('Salvamento antigo encontrado e migrado automaticamente.');return;}}catch(err){console.error(err);showToast('Não foi possível ler o salvamento anterior. Use seu backup JSON, se tiver.');}state.volumes=[volume()];state.selected=state.volumes[0].id;}
+const current=()=>state.volumes.find(x=>x.id===state.selected)||state.volumes[0];
+function saveNow(){try{localStorage.setItem(STORAGE,JSON.stringify(state));by('saveStatus').textContent='Salvo neste navegador';by('saveStatus').parentNode.querySelector('.save-dot').style.color='var(--ok)';}catch(e){by('saveStatus').textContent='Erro ao salvar — faça um backup';by('saveStatus').parentNode.querySelector('.save-dot').style.color='#ff7b82';showToast('O navegador bloqueou o salvamento. Exporte um backup JSON.');}}
+function save(){by('saveStatus').textContent='Salvando…';clearTimeout(saveTimer);saveTimer=setTimeout(saveNow,300)}
+function checkpoint(){undoStack.push(JSON.stringify(state));if(undoStack.length>30)undoStack.shift();by('undoBtn').disabled=false;}
+function undo(){if(!undoStack.length)return;state=JSON.parse(undoStack.pop());state.volumes=state.volumes.map(volume);state.selected=state.volumes.some(v=>v.id===state.selected)?state.selected:state.volumes[0].id;saveNow();renderAll();showToast('Alteração desfeita.');}
+function showToast(message){const el=by('toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500)}
+function iconButton(action,label,title=''){return `<button class="icon-btn" type="button" data-action="${action}" title="${esc(title||label)}" aria-label="${esc(title||label)}">${label}</button>`}
+function field(label,key,value='',type='text',placeholder=''){const el=type==='textarea'?`<textarea data-field="${esc(key)}" placeholder="${esc(placeholder)}">${esc(value)}</textarea>`:`<input data-field="${esc(key)}" type="${type}" value="${esc(value)}" placeholder="${esc(placeholder)}">`;return `<div class="field"><label>${esc(label)}</label>${el}</div>`}
+const summary=(name,count)=>`<span class="pill">${count} ${name}</span>`;
+function renderVolumes(){const host=by('volumeList');host.innerHTML=state.volumes.map((v,i)=>`<button class="volume-button ${v.id===state.selected?'selected':''}" data-volume="${esc(v.id)}" title="${esc(v.title)}"><i class="dot" style="background:${v.accent}"></i><span>${esc(v.title)}</span><small>${String(i+1).padStart(2,'0')}</small></button>`).join('');}
+function renderHero(){const v=current();const img=safeUrl(v.banner),host=by('hero');host.innerHTML=(img?`<img class="banner-img" src="${esc(img)}" alt="">`:`<div class="cover-fallback"></div>`)+`<div class="hero-info"><small>Golden Age / Dossiê complementar</small><h2>${esc(v.title)}</h2><p>${esc(v.subtitle)}</p></div>`;}
+function renderStats(){const v=current(),logs=Object.values(v.logs).reduce((a,b)=>a+b.length,0)+v.aptitudes.reduce((a,b)=>a+b.logs.length,0)+v.customCategories.reduce((a,b)=>a+b.logs.length,0),html=renderPost(v);by('stats').innerHTML=[[String(v.items.length),'Itens'],[String(logs),'Comprovantes'],[Intl.NumberFormat('pt-BR').format(html.length),'Caracteres']].map(([n,l])=>`<div class="stat"><strong>${n}</strong><span>${l}</span></div>`).join('');}
+function setPage(p){page=p;filter='';document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===p));const titles={items:['Inventário','Equipamentos, armas e objetos adquiridos.'],logs:['Histórico de registros','Missões, raids, aulas e comprovações.'],aptitudes:['Treinos de aptidão','Organize cada aptidão e seus treinos.'],custom:['Categorias personalizadas','Crie registros para qualquer outra finalidade.'],settings:['Aparência e opções','Personalize o visual e o limite de caracteres.']};by('pageTitle').textContent=titles[p][0];by('pageDescription').textContent=titles[p][1];renderEditor();}
+function renderEditor(){const v=current(),host=by('editorContent');if(page==='items'){host.innerHTML=`<div class="section-head"><div><h2>Arsenal & pertences</h2><p>Arraste pelo ícone ≡, duplique ou reordene com as setas.</p></div>${summary('itens',v.items.length)}</div><input class="search-bar" id="searchItems" placeholder="⌕  Buscar nome, tipo, descrição ou efeito…" value="${esc(filter)}"><div id="cards">${v.items.map(renderItemCard).join('')||'<div class="empty-state"><strong>Inventário vazio</strong>Comece adicionando seu primeiro item.</div>'}</div><button class="add-card" data-action="add-item">＋ Adicionar item ao inventário</button>`;}else if(page==='logs'){host.innerHTML=`<div class="section-head"><div><h2>Histórico comprobatório</h2><p>Os links são preservados na migração.</p></div></div><input class="search-bar" id="searchLogs" placeholder="⌕  Buscar registros nesta página…" value="${esc(filter)}">${TYPES.map(([key,name])=>`<section><div class="subsection"><h3>${name} <span>(${v.logs[key].length})</span></h3><button class="small-button" data-action="add-log" data-type="${key}">＋ Entrada</button></div><div class="loglist" data-list="logs" data-type="${key}">${v.logs[key].map(e=>renderLogCard(e,'logs',key)).join('')||'<div class="empty-state">Nenhum registro nesta categoria.</div>'}</div></section>`).join('')}`;}else if(page==='aptitudes'||page==='custom'){const isA=page==='aptitudes',arr=isA?v.aptitudes:v.customCategories;host.innerHTML=`<div class="section-head"><div><h2>${isA?'Treinamentos':'Registros especiais'}</h2><p>Inclua categorias e quantas comprovações precisar.</p></div>${summary('grupos',arr.length)}</div><div data-list="${page}">${arr.map(b=>renderGroup(b,page)).join('')||'<div class="empty-state"><strong>Nenhuma categoria</strong>Crie uma categoria para adicionar entradas.</div>'}</div><button class="add-card" data-action="add-group">＋ ${isA?'Adicionar aptidão':'Criar categoria personalizada'}</button>`;}else{host.innerHTML=`<div class="section-head"><div><h2>Identidade do volume</h2><p>Cada volume representa um post independente no fórum.</p></div></div><div class="meta-panel"><div class="editor-grid">${field('Título do volume','title',v.title)}${field('Subtítulo','subtitle',v.subtitle)}<div class="wide">${field('Imagem de capa (URL)','banner',v.banner,'url','https://...')}</div>${field('Cor de destaque','accent',v.accent,'color')}<div class="field"><label>Limite de caracteres por post</label><input id="postLimit" type="number" min="5000" max="1000000" value="${state.settings.limit}"></div></div><p class="tip">A cor e o banner combinam com a identidade da ficha principal, sem depender do CSS da ficha original.</p></div><div class="meta-panel"><div class="section-head" style="margin:0 0 12px"><div><h2>Organizar volumes</h2><p>Mais de um volume significa mais de um post.</p></div></div><div style="display:flex;flex-wrap:wrap;gap:8px"><button class="small-button" data-action="duplicate-volume">⧉ Duplicar volume</button><button class="small-button" data-action="rename-volume">✎ Renomear</button><button class="small-button danger" data-action="delete-volume">⌫ Excluir volume</button></div><div class="divider"></div><div class="section-head" style="margin:0"><div><h2>Segurança e migração</h2><p>Importe HTML antigo ou um backup salvo.</p></div></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="small-button" data-action="open-import">↥ Importar código</button><button class="small-button" data-action="backup">↓ Baixar backup JSON</button><button class="small-button" data-action="restore">↑ Restaurar JSON</button></div></div>`;}
+applyFilter();}
+function cardActions(){return `<div class="handle" draggable="true" title="Arrastar para reordenar">⠿</div>${iconButton('move-up','↑','Mover para cima')}${iconButton('move-down','↓','Mover para baixo')}${iconButton('duplicate','⧉','Duplicar')}${iconButton('delete','×','Excluir')}`;}
+function renderItemCard(it){return `<article class="editor-card" data-entity="item" data-id="${esc(it.id)}"><div class="cardtop">${cardActions().replace('</div><button','</div><button')}<strong>${esc(it.name||'Item sem nome')}</strong></div><div class="cardbody editor-grid"><details class="wide" style="border:1px dashed #4b3e59;border-radius:9px;padding:9px 11px;background:#1f1a2a"><summary style="cursor:pointer;color:#e0a0c7;font-size:11px;font-weight:750">✧ Preencher automaticamente usando a descrição bruta de um item</summary><textarea class="raw-item" style="width:100%;min-height:95px;resize:vertical;margin:10px 0;background:#0e111d;border:1px solid #494153;color:#fff;padding:10px;border-radius:8px" placeholder="Nome do item&#10;Tipo: Arma Grau 2&#10;Dano: 40&#10;Durabilidade: 30/30&#10;Descrição: ...&#10;Efeito: ..."></textarea><button class="small-button pink" data-action="smart-fill" type="button">✧ Preencher campos</button></details>${field('Nome','name',it.name)}${field('Tipo / grau','type',it.type)}<div class="wide">${field('URL da imagem','img',it.img,'url','https://...')}</div>${field('Dano','dmg',it.dmg)}${field('Durabilidade','dur',it.dur)}<div class="wide">${field('Descrição','desc',it.desc,'textarea')}</div><div class="wide">${field('Efeito','eff',it.eff,'textarea')}</div></div></article>`;}
+function renderLogCard(e,kind,type){return `<article class="editor-card" data-entity="entry" data-kind="${kind}" data-type="${esc(type)}" data-id="${esc(e.id)}"><div class="cardtop">${cardActions()}<strong>${esc(e.text||'Registro sem título')}</strong></div><div class="cardbody editor-grid">${field('Data','date',e.date,'text','DD/MM/AAAA')}<div class="field"><label>Comprovação</label><input data-field="link" value="${esc(e.link)}" placeholder="https://..."></div><div class="wide">${field('Descrição','text',e.text,'textarea','Breve descrição da atividade')}</div></div></article>`;}
+function renderGroup(g,kind){const isA=kind==='aptitudes';return `<article class="editor-card" data-entity="group" data-kind="${kind}" data-id="${esc(g.id)}"><div class="cardtop">${cardActions()}<strong>${esc(g.name||'Categoria sem nome')}</strong></div><div class="cardbody"><div class="field">${isA?`<label>Aptidão</label><select data-field="name">${[...new Set([g.name,...APT])].filter(Boolean).map(x=>`<option value="${esc(x)}" ${g.name===x?'selected':''}>${esc(x)}</option>`).join('')}</select>`:field('Nome da categoria','name',g.name)}</div><div class="subsection"><h3>Comprovações <span>(${g.logs.length})</span></h3><button class="small-button" data-action="add-subentry">＋ Treino / registro</button></div><div data-list="subentries" class="loglist">${g.logs.map(e=>renderLogCard(e,'sub',g.id)).join('')||'<div class="empty-state">Sem entradas nesta categoria.</div>'}</div></div></article>`;}
+function applyFilter(){if(!filter)return;const f=filter.toLocaleLowerCase('pt-BR');by('editorContent').querySelectorAll('.editor-card[data-entity="item"],.editor-card[data-entity="entry"]').forEach(el=>{el.classList.toggle('hidden',!el.textContent.toLocaleLowerCase('pt-BR').includes(f)&&![...el.querySelectorAll('input,textarea')].some(inp=>inp.value.toLocaleLowerCase('pt-BR').includes(f)))});}
+function getCollection(el){const v=current();if(el.dataset.entity==='item')return v.items;if(el.dataset.entity==='group')return v[el.dataset.kind];if(el.dataset.kind==='logs')return v.logs[el.dataset.type];if(el.dataset.kind==='sub'){const g=[...v.aptitudes,...v.customCategories].find(b=>b.id===el.dataset.type);return g?.logs||[];}return [];}
+function getTarget(el){return getCollection(el).find(x=>x.id===el.dataset.id)}
+function commit(){save();renderVolumes();renderHero();renderStats();renderPreview();}
+function updateInput(el){const card=el.closest('.editor-card'),k=el.dataset.field;if(card&&k){const target=getTarget(card);if(!target)return;target[k]=el.value;const title=card.querySelector('.cardtop strong');if(title&&['name','text'].includes(k))title.textContent=el.value||(k==='name'?'Sem nome':'Registro sem título');if(card.dataset.entity==='group'&&k==='name'&&page==='aptitudes'&&target.name==='Corrida')target.name='Celeridade';}else if(k){current()[k]=el.value;}commit();}
+function actions(a,btn){const v=current(),el=btn.closest('.editor-card'),col=el?getCollection(el):[],i=el?col.findIndex(x=>x.id===el.dataset.id):-1;if(a==='smart-fill'){const o=getTarget(el),raw=el.querySelector('.raw-item')?.value?.trim();if(!o||!raw){showToast('Cole a descrição bruta do item antes de preencher.');return;}const take=pattern=>raw.match(pattern)?.[1]?.trim()||'',lines=raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),name=take(/(?:^|\n)\s*Nome\s*:\s*([^\n]+)/i)||(!/^(Tipo|Classificação|Dano|Ataque|Durabilidade|Resistência|Descrição|Desc|Efeito|Habilidade)\s*:/i.test(lines[0]||'')?lines[0]:'');checkpoint();const vals={name,type:take(/(?:^|\n)\s*(?:Tipo|Classificação)\s*:\s*([^\n]+)/i),dmg:take(/(?:^|\n)\s*(?:Dano|Ataque)\s*:\s*([^\n]+)/i),dur:take(/(?:^|\n)\s*(?:Durabilidade|Resistência)\s*:\s*([^\n]+)/i),desc:take(/(?:Descrição|Desc)\s*:\s*([\s\S]*?)(?=\n\s*(?:Efeito|Habilidade)\s*:|$)/i),eff:take(/(?:Efeito|Habilidade)\s*:\s*([\s\S]*)/i)};let applied=0;Object.entries(vals).forEach(([k,x])=>{if(x){o[k]=x;applied++;}});renderEditor();commit();showToast(applied+' campo(s) preenchido(s) automaticamente. Confira antes de postar.');return;}if(a==='add-item'){checkpoint();v.items.push(item());renderEditor();commit();return;}if(a==='add-log'){checkpoint();v.logs[btn.dataset.type].push(entry());renderEditor();commit();return;}if(a==='add-group'){checkpoint();v[page].push(block({name:page==='aptitudes'?'Combate Desarmado':''}));renderEditor();commit();return;}if(a==='add-subentry'){checkpoint();const grp=getTarget(el);grp.logs.push(entry());renderEditor();commit();return;}if(['delete','duplicate','move-up','move-down'].includes(a)&&i>=0){if(a==='delete'&&!confirm('Excluir este registro? Você pode desfazer pelo botão no topo.'))return;checkpoint();if(a==='delete')col.splice(i,1);if(a==='duplicate'){const o=JSON.parse(JSON.stringify(col[i]));delete o.id;const fresh=el.dataset.entity==='item'?item(o):el.dataset.entity==='group'?block(o):entry(o);col.splice(i+1,0,fresh)}if(a==='move-up'&&i>0)[col[i-1],col[i]]=[col[i],col[i-1]];if(a==='move-down'&&i<col.length-1)[col[i],col[i+1]]=[col[i+1],col[i]];renderEditor();commit();return;}
+if(a==='open-import'){openImport();return;}if(a==='backup'){backup();return;}if(a==='restore'){openRestore();return;}if(a==='duplicate-volume'){checkpoint();const original=JSON.parse(JSON.stringify(v));delete original.id;const d=volume(original);d.title=v.title+' — cópia';const n=state.volumes.findIndex(x=>x.id===v.id);state.volumes.splice(n+1,0,d);state.selected=d.id;renderAll();save();return;}if(a==='rename-volume'){const r=prompt('Novo título do volume:',v.title);if(r!==null){checkpoint();v.title=r.trim()||'Arquivo secundário';renderAll();save()}return;}if(a==='delete-volume'){if(!confirm('Excluir este volume inteiro e seus registros?'))return;checkpoint();state.volumes=state.volumes.filter(x=>x.id!==v.id);if(!state.volumes.length)state.volumes=[volume()];state.selected=state.volumes[0].id;renderAll();save();return;}}
+function htmlCSS(){return `<style>.ga-sec,.ga-sec *{box-sizing:border-box}.ga-sec{--gas-accent:#d52c86;color:#e8e9ee!important;background:#0e121b!important;font:13px/1.6 "Segoe UI",Arial,sans-serif!important;border:1px solid #39404f;border-radius:14px;max-width:820px;width:100%;margin:14px auto;overflow:hidden;isolation:isolate;overflow-wrap:anywhere}.ga-sec .ga-sec-hero{position:relative;min-height:166px;background:linear-gradient(130deg,#1d2535,#2b1730);overflow:hidden}.ga-sec .ga-sec-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75}.ga-sec .ga-sec-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0e121bea,#1115224c),linear-gradient(0deg,#0e121b,transparent 70%)}.ga-sec .ga-sec-head{position:relative;z-index:1;padding:32px 25px 22px;min-height:166px;display:flex;flex-direction:column;justify-content:end}.ga-sec .ga-sec-overline{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gas-accent)}.ga-sec .ga-sec-title{font-size:clamp(22px,4vw,34px);letter-spacing:-1px;font-weight:900;line-height:1.15;color:#fff;margin:7px 0 5px}.ga-sec .ga-sec-subtitle{color:#c4c5d1;font-size:12px}.ga-sec .ga-sec-rule{height:3px;background:linear-gradient(90deg,var(--gas-accent),transparent 85%)}.ga-sec .ga-sec-inner{padding:14px 16px 19px;background:repeating-linear-gradient(135deg,#111622,#111622 13px,#121723 13px,#121723 14px)}.ga-sec details.ga-sec-pane{display:block!important;overflow:hidden;border:1px solid #353b4c;border-radius:11px;margin:10px 0;background:#141a28}.ga-sec details.ga-sec-pane>summary{display:flex!important;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;padding:14px 17px;background:linear-gradient(90deg,#252033,#1b2130);color:#fff!important;font:800 12px/1.5 "Segoe UI",Arial,sans-serif!important;letter-spacing:1.1px;text-transform:uppercase;user-select:none}.ga-sec details.ga-sec-pane>summary::-webkit-details-marker{display:none}.ga-sec details.ga-sec-pane>summary:after{content:"＋";font-size:18px;font-weight:400;color:var(--gas-accent)}.ga-sec details.ga-sec-pane[open]>summary:after{content:"−"}.ga-sec .ga-sec-number{margin-left:auto;background:#333047;border:1px solid #544359;color:#f2afd1;border-radius:50px;padding:1px 10px;font-size:10px;letter-spacing:0}.ga-sec .ga-sec-content{padding:14px}.ga-sec .ga-sec-empty{font-size:11px;color:#8690a4;padding:8px}.ga-sec .ga-sec-item{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;align-items:start;margin:0 0 11px;padding:13px;border-radius:10px;border:1px solid #363d4c;background:linear-gradient(110deg,#202637,#171c2a)}.ga-sec .ga-sec-item:last-child{margin-bottom:0}.ga-sec .ga-sec-image{width:100%;height:107px;object-fit:cover;border-radius:7px;background:#101624;border:1px solid #434859}.ga-sec .ga-sec-noimg{width:100%;height:107px;border-radius:7px;background:radial-gradient(circle at top right,#522547,#101624 72%);border:1px solid #434859;display:flex;align-items:center;justify-content:center;color:#a76c96;font-size:27px}.ga-sec .ga-sec-itemheader{display:flex;align-items:start;justify-content:space-between;gap:8px;border-bottom:1px solid #4c3a55;padding-bottom:7px;margin-bottom:7px}.ga-sec .ga-sec-itemname{font-size:14px;font-weight:900;color:#fff;line-height:1.25}.ga-sec .ga-sec-tag{border:1px solid #58415e;color:#ffd0e6;border-radius:5px;padding:1px 7px;font-size:10px;white-space:normal;background:#30213d}.ga-sec .ga-sec-spec{color:#bac0ce;font-size:11px;margin:4px 0}.ga-sec .ga-sec-spec b{color:#fff}.ga-sec .ga-sec-description{white-space:normal;font-size:12px;color:#cdd1dc;line-height:1.6}.ga-sec .ga-sec-effect{margin-top:7px;padding:8px 10px;border-left:2px solid var(--gas-accent);background:#251f33;color:#efcde0;font-size:11px}.ga-sec .ga-sec-effect b{color:#fff}.ga-sec .ga-sec-group{margin:0 0 13px}.ga-sec .ga-sec-group:last-child{margin-bottom:0}.ga-sec .ga-sec-grouphead{font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#ffcae5;background:linear-gradient(90deg,#3b2944,transparent);border-left:3px solid var(--gas-accent);padding:7px 11px;margin-bottom:6px}.ga-sec .ga-sec-row{display:grid;grid-template-columns:85px minmax(0,1fr) auto;align-items:start;gap:12px;background:#1d2332;border:1px solid #2d3547;border-radius:6px;padding:9px 11px;margin-bottom:5px;font-size:11px}.ga-sec .ga-sec-date{font-family:ui-monospace,Consolas,monospace;color:#e497c2;font-size:10px;font-weight:750}.ga-sec .ga-sec-entrytext{color:#e3e4eb;white-space:normal}.ga-sec a.ga-sec-link{display:inline-block;text-decoration:none!important;color:#fff!important;background:#5b2850;border:1px solid #8b4879;padding:2px 9px;border-radius:5px;font-size:10px;font-weight:800;white-space:nowrap}.ga-sec a.ga-sec-link:hover{background:#8c326d}.ga-sec .ga-sec-footer{border-top:1px solid #353c4c;padding:9px 20px;color:#798297;display:flex;align-items:center;justify-content:space-between;font-size:9px;letter-spacing:1px;text-transform:uppercase}.ga-sec .ga-sec-footer span:last-child{color:var(--gas-accent)}@media(max-width:520px){.ga-sec .ga-sec-item{grid-template-columns:75px minmax(0,1fr);gap:9px;padding:10px}.ga-sec .ga-sec-image,.ga-sec .ga-sec-noimg{height:78px}.ga-sec .ga-sec-inner{padding:8px}.ga-sec .ga-sec-content{padding:10px}.ga-sec .ga-sec-row{grid-template-columns:1fr auto;gap:5px}.ga-sec .ga-sec-date{grid-column:1/-1}.ga-sec .ga-sec-head{padding:22px 15px 16px}.ga-sec details.ga-sec-pane>summary{padding:12px}}}</style>`;}
+function renderRow(e){const u=safeUrl(e.link);return `<div class="ga-sec-row"><span class="ga-sec-date">${esc(e.date)}</span><span class="ga-sec-entrytext">${nl(e.text)}</span>${u?`<a class="ga-sec-link" href="${esc(u)}" target="_blank" rel="noopener noreferrer">↗ LINK</a>`:'<span></span>'}</div>`;}
+function renderGroupForum(title,logs){return `<div class="ga-sec-group"><div class="ga-sec-grouphead">${esc(title)}</div>${logs.length?logs.map(renderRow).join(''):'<div class="ga-sec-empty">Nenhuma comprovação registrada.</div>'}</div>`;}
+function renderItemForum(o){const u=safeUrl(o.img);return `<div class="ga-sec-item">${u?`<img class="ga-sec-image" src="${esc(u)}" alt="${esc(o.name)}" loading="lazy">`:'<div class="ga-sec-noimg">✧</div>'}<div><div class="ga-sec-itemheader"><span class="ga-sec-itemname">${esc(o.name)}</span>${o.type?`<span class="ga-sec-tag">${esc(o.type)}</span>`:''}</div>${o.dmg||o.dur?`<div class="ga-sec-spec">${o.dmg?`<b>Dano:</b> ${esc(o.dmg)}`:''}${o.dmg&&o.dur?' &nbsp;·&nbsp; ':''}${o.dur?`<b>Durabilidade:</b> ${esc(o.dur)}`:''}</div>`:''}${o.desc?`<div class="ga-sec-description">${nl(o.desc)}</div>`:''}${o.eff?`<div class="ga-sec-effect"><b>Efeito:</b> ${nl(o.eff)}</div>`:''}</div></div>`;}
+function pane(title,count,content,open=true){return `<details class="ga-sec-pane"${open?' open':''}><summary>${esc(title)}<span class="ga-sec-number">${count}</span></summary><div class="ga-sec-content">${content||'<div class="ga-sec-empty">Nenhum registro neste volume.</div>'}</div></details>`;}
+function renderPost(v,opt={}){const records=TYPES.map(([k,name])=>v.logs[k].length?renderGroupForum(name,v.logs[k]):'').join(''),apts=v.aptitudes.map(b=>renderGroupForum(b.name,b.logs)).join(''),custom=v.customCategories.map(b=>renderGroupForum(b.name,b.logs)).join(''),banner=safeUrl(v.banner),title=opt.part?`${v.title} • ${opt.part}`:v.title;const hasI=v.items.length,hasR=!!(records||apts||custom);return `${htmlCSS()}<div class="ga-sec" style="--gas-accent:${safeColor(v.accent)}"><div class="ga-sec-hero">${banner?`<img class="ga-sec-cover" src="${esc(banner)}" alt="">`:''}<div class="ga-sec-head"><div class="ga-sec-overline">✦ GOLDEN AGE · FICHA SECUNDÁRIA</div><div class="ga-sec-title">${esc(title)}</div><div class="ga-sec-subtitle">${esc(v.subtitle)}</div></div></div><div class="ga-sec-rule"></div><div class="ga-sec-inner">${hasI?pane('Inventário',hasI,v.items.map(renderItemForum).join('')):''}${records?pane('Registros',Object.values(v.logs).reduce((a,l)=>a+l.length,0),records):''}${apts?pane('Aptidões',v.aptitudes.reduce((a,b)=>a+b.logs.length,0),apts):''}${custom?pane('Categorias especiais',v.customCategories.reduce((a,b)=>a+b.logs.length,0),custom):''}${!hasI&&!hasR?pane('Arquivo',0,''):''}</div><div class="ga-sec-footer"><span>Registro complementar</span><span>Golden Age RPG</span></div></div>`.replace(/\r?\n/g,'');}
+function previewHTML(code){return `<!doctype html><html lang="pt-br"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;padding:0;background:#0c1019;color:white;font-family:Arial,sans-serif}body{padding:9px}</style></head><body>${code}</body></html>`}
+function renderPreview(){const code=renderPost(current());by('codeView').value=code;by('countLabel').textContent=Intl.NumberFormat('pt-BR').format(code.length)+' caracteres';by('limitLabel').textContent='Limite: '+Intl.NumberFormat('pt-BR').format(state.settings.limit);const pct=code.length/state.settings.limit;by('meterFill').style.width=Math.min(pct*100,100)+'%';by('countMeter').classList.toggle('danger',pct>1);if(previewMode==='visual'){const frame=by('previewFrame');let openState=[];try{openState=[...frame.contentDocument.querySelectorAll('details.ga-sec-pane')].map(n=>n.open)}catch{}frame.onload=()=>{try{[...frame.contentDocument.querySelectorAll('details.ga-sec-pane')].forEach((n,i)=>{if(openState[i]!==undefined)n.open=openState[i]});frame.style.height=Math.max(610,frame.contentDocument.body.scrollHeight+22)+'px';frame.contentDocument.addEventListener('click',()=>setTimeout(()=>{frame.style.height=Math.max(610,frame.contentDocument.body.scrollHeight+22)+'px'},30))}catch{}};frame.srcdoc=previewHTML(code);}}
+function renderAll(){renderVolumes();renderHero();setPage(page);renderStats();renderPreview();by('undoBtn').disabled=!undoStack.length;}
+function copyText(s){return navigator.clipboard?.writeText(s).catch(()=>fallbackCopy(s))||fallbackCopy(s)}
+function fallbackCopy(t){const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;top:0;left:0;opacity:.01';document.body.append(a);a.focus();a.select();const ok=document.execCommand('copy');a.remove();if(!ok)throw Error('O navegador recusou a cópia. Selecione o HTML manualmente na aba HTML.');}
+async function doCopy(code){try{await copyText(code);showToast('HTML copiado! Cole diretamente no post do Forumeiros.')}catch(e){showToast(e.message)}}
+function newVolume(){checkpoint();const v=volume({title:`Arquivo secundário ${state.volumes.length+1}`});state.volumes.push(v);state.selected=v.id;renderAll();save();showToast('Novo volume independente criado.');}
+function onDragStart(e){const handle=e.target.closest('.handle');if(!handle)return;const card=handle.closest('.editor-card');if(!card)return;dragged=card;card.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',card.dataset.id);}
+function onDragOver(e){if(!dragged)return;const target=e.target.closest('.editor-card');if(!target||target===dragged||!target.parentElement||target.parentElement!==dragged.parentElement)return;e.preventDefault();target.classList.add('dragover');}
+function onDrop(e){const target=e.target.closest('.editor-card');document.querySelectorAll('.dragover').forEach(n=>n.classList.remove('dragover'));if(!dragged||!target||target===dragged||dragged.parentElement!==target.parentElement)return;e.preventDefault();const col=getCollection(dragged),a=col.findIndex(x=>x.id===dragged.dataset.id),b=col.findIndex(x=>x.id===target.dataset.id);if(a<0||b<0)return;checkpoint();col.splice(b,0,...col.splice(a,1));dragged=null;renderEditor();commit();}
+function onDragEnd(){document.querySelectorAll('.dragging,.dragover').forEach(n=>n.classList.remove('dragging','dragover'));dragged=null;}
+function modal(title,desc,body,footer){by('dialogTitle').textContent=title;by('dialogDesc').textContent=desc;by('dialogMain').innerHTML=body;by('dialogFoot').innerHTML=footer;by('modal').classList.add('on');}
+function closeModal(){by('modal').classList.remove('on')}
+function parseText(el){if(!el)return '';const clone=el.cloneNode(true);clone.querySelectorAll('br').forEach(x=>x.replaceWith('\n'));clone.querySelectorAll('p,div').forEach(x=>x.append('\n'));return (clone.textContent||'').trim()}
+function parseOld(root){const data=volume({title:'Ficha importada'});root.querySelectorAll('.j-c.c1 .i-c,.i-c').forEach(el=>{const spec=parseText(el.querySelector('.i-st'));const dmg=spec.match(/Dano\s*:\s*(.*?)(?=\s*\|\s*Durabilidade\s*:|$)/i);const dur=spec.match(/Durabilidade\s*:\s*(.*)$/i);data.items.push(item({name:parseText(el.querySelector('.i-n')),type:parseText(el.querySelector('.i-tp')),img:el.querySelector('.i-m')?.getAttribute('src')||'',dmg:dmg?.[1]||'',dur:dur?.[1]||'',desc:parseText(el.querySelector('.i-d')),eff:parseText(el.querySelector('.i-ef')).replace(/^Efeito\s*:\s*/i,'')}))});
+function oldRows(el){return [...el.querySelectorAll('.l-rw')].map(r=>entry({date:parseText(r.querySelector('.l-dt')),text:parseText(r.querySelector('.l-tx')),link:r.querySelector('.l-lk')?.getAttribute('href')||''}))}
+root.querySelectorAll('.l-bk').forEach(b=>{const t=parseText(b.querySelector('.l-tt'));const norm=t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();if(norm.includes('treinos de aptidao')){b.querySelectorAll('.ap-bx').forEach(a=>{const head=a.querySelector('.ap-hd');const copy=head?.cloneNode(true);copy?.querySelector('.c-n')?.remove();const name=parseText(copy);data.aptitudes.push(block({name:name==='Corrida'?'Celeridade':name,logs:oldRows(a)}));});return;}const type=TYPES.find(([k,name])=>norm===name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase());if(type){data.logs[type[0]].push(...oldRows(b));}else if(t)data.customCategories.push(block({name:t,logs:oldRows(b)}));});return data;}
+function parseNew(root){const d=volume({title:parseText(root.querySelector('.ga-sec-title'))||'Ficha importada',subtitle:parseText(root.querySelector('.ga-sec-subtitle')),banner:root.querySelector('.ga-sec-cover')?.getAttribute('src')||'',accent:(root.getAttribute('style')||'').match(/--gas-accent:\s*(#[0-9a-fA-F]{6})/)?.[1]||'#d52c86'});root.querySelectorAll('.ga-sec-item').forEach(el=>{const spec=parseText(el.querySelector('.ga-sec-spec')),dmg=spec.match(/Dano\s*:\s*(.*?)(?=\s*[·|]\s*Durabilidade|$)/i),dur=spec.match(/Durabilidade\s*:\s*(.*)$/i);d.items.push(item({name:parseText(el.querySelector('.ga-sec-itemname')),type:parseText(el.querySelector('.ga-sec-tag')),img:el.querySelector('img.ga-sec-image')?.getAttribute('src')||'',dmg:dmg?.[1]||'',dur:dur?.[1]||'',desc:parseText(el.querySelector('.ga-sec-description')),eff:parseText(el.querySelector('.ga-sec-effect')).replace(/^Efeito\s*:\s*/i,'')}))});const panes=[...root.querySelectorAll('details.ga-sec-pane')];panes.forEach(p=>{const name=parseText(p.querySelector('summary'));let category='';if(/^Invent[aá]rio/i.test(name))return;if(/^Registros/i.test(name))category='logs';else if(/^Aptid[oõ]es/i.test(name))category='aptitudes';else if(/^Categorias/i.test(name))category='customCategories';if(!category)return;p.querySelectorAll('.ga-sec-group').forEach(grp=>{const n=parseText(grp.querySelector('.ga-sec-grouphead'));const entries=[...grp.querySelectorAll('.ga-sec-row')].map(r=>entry({date:parseText(r.querySelector('.ga-sec-date')),text:parseText(r.querySelector('.ga-sec-entrytext')),link:r.querySelector('.ga-sec-link')?.getAttribute('href')||''}));if(category==='logs'){const typ=TYPES.find(([k,t])=>t===n);if(typ)d.logs[typ[0]].push(...entries);else d.customCategories.push(block({name:n,logs:entries}));}else d[category].push(block({name:n,logs:entries}));});});return d;}
+function parsePasted(raw){const s=raw.trim();if(!s)throw Error('Cole o HTML completo da ficha antiga.');if(s.startsWith('{')){const d=JSON.parse(s);if(Array.isArray(d.volumes))return d.volumes.map(volume);if(d.items||d.aptitudes||d.missoes)return [volume(d)];throw Error('Esse JSON não parece conter dados de ficha.')}const doc=new DOMParser().parseFromString(s,'text/html'),newroots=[...doc.querySelectorAll('.ga-sec')];if(newroots.length)return newroots.map(parseNew);const oldroots=[...doc.querySelectorAll('.j-b')];if(oldroots.length)return oldroots.map(parseOld);if(doc.querySelector('.i-c,.l-bk'))return [parseOld(doc.body)];throw Error('Nenhuma ficha foi encontrada. Cole o HTML gerado para postar, começando por <style> ou <div class="j-b">.');}
+function amount(v){return {items:v.items.length,logs:Object.values(v.logs).reduce((x,a)=>x+a.length,0)+v.aptitudes.reduce((x,a)=>x+a.logs.length,0)+v.customCategories.reduce((x,a)=>x+a.logs.length,0),groups:v.aptitudes.length+v.customCategories.length};}
+function mergeVolume(dst,src){dst.items.push(...src.items.map(item));TYPES.forEach(([k])=>dst.logs[k].push(...src.logs[k].map(entry)));dst.aptitudes.push(...src.aptitudes.map(block));dst.customCategories.push(...src.customCategories.map(block));}
+function openImport(){modal('Importar ficha antiga','Cole o HTML da ficha secundária anterior. Funciona com um ou vários posts e também com o HTML desta versão.',`<label class="label" for="importPaste">CÓDIGO HTML ANTIGO</label><textarea class="import-area" id="importPaste" placeholder="Cole aqui o código completo da ficha secundária antiga…"></textarea><div class="radio-row"><label><input type="radio" name="importMethod" value="new" checked> Criar novo(s) volume(s)</label><label><input type="radio" name="importMethod" value="merge"> Mesclar ao volume atual</label><label><input type="radio" name="importMethod" value="replace"> Substituir volume atual</label></div><div class="tip">O sistema preserva itens, tipos, danos, durabilidade, imagens, descrições, efeitos, links, datas, treinos e categorias personalizadas. A importação não executa scripts colados.</div><div id="importReport"></div>`,`<button class="secondary" data-modal="cancel">Cancelar</button><button class="primary" data-modal="import">Analisar e importar</button>`);}
+function doImport(){try{const parsed=parsePasted(by('importPaste').value),mode=document.querySelector('[name="importMethod"]:checked').value;const total=parsed.reduce((p,v)=>{const a=amount(v);return {items:p.items+a.items,logs:p.logs+a.logs,groups:p.groups+a.groups}}, {items:0,logs:0,groups:0});if(!total.items&&!total.logs&&!total.groups)throw Error('A ficha foi encontrada, mas não contém itens nem registros para migrar.');checkpoint();if(mode==='new'){state.volumes.push(...parsed);state.selected=parsed[0].id;}else if(mode==='merge'){parsed.forEach(v=>mergeVolume(current(),v));}else{const idx=state.volumes.indexOf(current());const replacement=parsed[0];replacement.title=current().title;state.volumes[idx]=replacement;state.selected=replacement.id;parsed.slice(1).forEach(x=>state.volumes.push(x));}page='items';saveNow();renderAll();closeModal();showToast(`Importado: ${total.items} itens, ${total.logs} registros, ${total.groups} categorias.`)}catch(e){by('importReport').innerHTML=`<div class="import-report" style="background:#391d27;border-color:#833e54;color:#ffb9c8">${esc(e.message)}</div>`;}}
+function backup(){const name='golden-age-fichas-backup-'+new Date().toISOString().slice(0,10)+'.json';download(name,JSON.stringify(state,null,2),'application/json;charset=utf-8');showToast('Backup completo exportado. Guarde o arquivo em lugar seguro.');}
+function download(name,data,type){const b=new Blob([data],{type}),url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000)}
+function openRestore(){modal('Restaurar backup JSON','A restauração substitui os dados locais atuais. Faça um backup primeiro se necessário.',`<input id="restoreFile" type="file" accept=".json,application/json" style="display:block;margin-bottom:15px"><textarea class="import-area" id="restoreText" placeholder="Ou cole aqui o conteúdo do backup JSON…"></textarea><div id="restoreReport"></div>`,`<button class="secondary" data-modal="cancel">Cancelar</button><button class="primary" data-modal="restore">Restaurar backup</button>`);}
+async function doRestore(){try{const f=by('restoreFile').files[0],text=f?await f.text():by('restoreText').value,d=JSON.parse(text);if(!Array.isArray(d.volumes)||!d.volumes.length)throw Error('Backup inválido: volumes não encontrados.');if(!confirm('Substituir TODOS os volumes atuais pelo backup?'))return;checkpoint();state.volumes=d.volumes.map(volume);state.selected=state.volumes[0].id;state.settings.limit=Number(d.settings?.limit)||65000;saveNow();renderAll();closeModal();showToast('Backup restaurado com sucesso.')}catch(e){by('restoreReport').innerHTML=`<div class="import-report warning">${esc(e.message)}</div>`}}
+function flatten(v){const units=[];v.items.forEach(x=>units.push({type:'item',entry:x}));TYPES.forEach(([k])=>v.logs[k].forEach(x=>units.push({type:'log',key:k,entry:x})));v.aptitudes.forEach(g=>{if(!g.logs.length)units.push({type:'apt',name:g.name,groupId:g.id,empty:true});else g.logs.forEach(x=>units.push({type:'apt',name:g.name,groupId:g.id,entry:x}));});v.customCategories.forEach(g=>{if(!g.logs.length)units.push({type:'custom',name:g.name,groupId:g.id,empty:true});else g.logs.forEach(x=>units.push({type:'custom',name:g.name,groupId:g.id,entry:x}));});return units;}
+function addUnit(v,u){if(u.type==='item')v.items.push(u.entry);else if(u.type==='log')v.logs[u.key].push(u.entry);else{const k=u.type==='apt'?'aptitudes':'customCategories';let group=v[k].find(x=>x.id===u.groupId);if(!group){group=block({id:u.groupId,name:u.name});v[k].push(group)}if(u.entry)group.logs.push(u.entry)}}
+function splitVolume(v,limit){const full=renderPost(v);if(full.length<=limit)return [{code:full,large:false}];const units=flatten(v),parts=[];if(!units.length)return [{code:full,large:full.length>limit}];let part=volume({...v,items:[],logs:Object.fromEntries(TYPES.map(([k])=>[k,[]])),aptitudes:[],customCategories:[]}),used=0;function push(){if(used){parts.push(part);part=volume({...v,items:[],logs:Object.fromEntries(TYPES.map(([k])=>[k,[]])),aptitudes:[],customCategories:[]});used=0;}}for(const u of units){addUnit(part,u);used++;if(renderPost(part,{part:'PARTE 999'}).length>limit&&used>1){const k=u.type==='item'?'items':u.type==='log'?null:u.type==='apt'?'aptitudes':'customCategories';if(k==='items')part.items.pop();else if(u.type==='log')part.logs[u.key].pop();else{const g=part[k].find(x=>x.id===u.groupId);if(g&&u.entry)g.logs.pop();if(g&&!g.logs.length)part[k]=part[k].filter(x=>x!==g)}used--;push();addUnit(part,u);used=1;}}
+push();return parts.map((p,i)=>{const code=renderPost(p,{part:`PARTE ${String(i+1).padStart(2,'0')} / ${String(parts.length).padStart(2,'0')}`});return {code,large:code.length>limit}});}
+function exportDialog(){const lim=state.settings.limit;const packets=state.volumes.flatMap((v,j)=>splitVolume(v,lim).map((p,i)=>({...p,title:v.title,volume:j+1,part:i+1})));const html=packets.map((p,i)=>`<div class="export-entry"><header><div><h3>${esc(p.title)} · Post ${i+1}</h3><p class="${p.large?'warning':''}">${p.code.length.toLocaleString('pt-BR')} caracteres / limite ${lim.toLocaleString('pt-BR')}${p.large?' — Uma entrada isolada ultrapassa o limite; reduza o texto ou aumente o limite.':''}</p></div><button class="small-button pink" data-modal="copy-export" data-index="${i}">⧉ Copiar</button></header><textarea readonly spellcheck="false" data-post="${i}">${esc(p.code)}</textarea></div>`).join('');modal('Posts prontos para o Forumeiros',`${packets.length} post(s) gerado(s). Cada trecho abaixo é independente, mesmo se houver outros iguais no tópico.`,`<div class="tip">Copie cada post separadamente. A divisão automática nunca corta um item ou comprovante ao meio.</div><div class="export-list">${html}</div>`,`<button class="secondary" data-modal="download-posts">↓ Baixar todos em .txt</button><button class="primary" data-modal="cancel">Concluir</button>`);window.__ga_exportPackets=packets;}
+function bind(){by('mainNav').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b)setPage(b.dataset.page)});by('volumeList').addEventListener('click',e=>{const b=e.target.closest('[data-volume]');if(b){state.selected=b.dataset.volume;filter='';renderAll();save()}});by('newVolume').onclick=newVolume;by('undoBtn').onclick=undo;by('importBtn').onclick=openImport;by('exportBtn').onclick=exportDialog;by('openExportBtn').onclick=exportDialog;by('backupBtn').onclick=backup;by('copyBtn').onclick=()=>{const code=renderPost(current());if(code.length>state.settings.limit){showToast('Este volume excede o limite. Use os posts divididos.');exportDialog();}else doCopy(code)};by('previewViewBtn').onclick=()=>{previewMode='visual';by('previewFrame').classList.remove('hidden');by('codeView').style.display='none';by('previewViewBtn').classList.add('on');by('codeViewBtn').classList.remove('on');renderPreview()};by('codeViewBtn').onclick=()=>{previewMode='code';by('previewFrame').classList.add('hidden');by('codeView').style.display='block';by('previewViewBtn').classList.remove('on');by('codeViewBtn').classList.add('on');renderPreview()};by('editorContent').addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(b)actions(b.dataset.action,b)});by('editorContent').addEventListener('input',e=>{const el=e.target;if(el.matches('.search-bar')){filter=el.value;document.querySelectorAll('.editor-card').forEach(n=>n.classList.remove('hidden'));applyFilter();return;}if(el.id==='postLimit'){state.settings.limit=Math.max(5000,Math.min(1000000,Number(el.value)||65000));commit();return;}if(el.dataset.field)updateInput(el)});by('editorContent').addEventListener('change',e=>{if(e.target.dataset.field)updateInput(e.target)});by('editorContent').addEventListener('focusin',e=>{if(e.target.matches('[data-field],#postLimit'))checkpoint()});by('editorContent').addEventListener('dragstart',onDragStart);by('editorContent').addEventListener('dragover',onDragOver);by('editorContent').addEventListener('drop',onDrop);by('editorContent').addEventListener('dragend',onDragEnd);by('closeModal').onclick=closeModal;by('modal').addEventListener('click',e=>{if(e.target===by('modal'))closeModal();const btn=e.target.closest('[data-modal]');if(!btn)return;const action=btn.dataset.modal;if(action==='cancel')closeModal();if(action==='import')doImport();if(action==='restore')doRestore();if(action==='copy-export')doCopy(window.__ga_exportPackets[Number(btn.dataset.index)].code);if(action==='download-posts'){const contents=window.__ga_exportPackets.map((p,i)=>`========== POST ${i+1} ==========${'\n'}${p.code}`).join('\n\n');download('golden-age-posts.txt',contents,'text/plain;charset=utf-8')}});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();saveNow();showToast('Dados salvos.')}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){e.preventDefault();undo()}});window.addEventListener('beforeunload',()=>{if(saveTimer){clearTimeout(saveTimer);saveNow()}});}
+load();bind();renderAll();saveNow();
+})();
 </script>
 </body>
 </html>
